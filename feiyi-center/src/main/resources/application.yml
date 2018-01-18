@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: feiyi-center
+---
+spring:
+  profiles: peer1
+server:
+  port: 27001
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:27002/eureka
+---
+spring:
+  profiles: peer2
+server:
+  port: 27002
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:27001/eureka
