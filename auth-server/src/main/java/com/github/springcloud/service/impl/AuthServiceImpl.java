@@ -4,12 +4,14 @@ import com.github.springcloud.entity.ClientEntity;
 import com.github.springcloud.jwt.JwtAuthResponse;
 import com.github.springcloud.mapper.ClientMapper;
 import com.github.springcloud.service.AuthService;
+import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,8 @@ public class AuthServiceImpl implements AuthService{
 
             ClientEntity entity = clientMapper.selectOneByNameAndPassword(params);
             if(entity != null){
+                Date now = new Date();
+                entity.getExpireTime();
                 response.setToken("123456Token");
             }
         }
