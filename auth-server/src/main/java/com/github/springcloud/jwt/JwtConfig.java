@@ -5,7 +5,7 @@ package com.github.springcloud.jwt;
  */
 public class JwtConfig {
     /**
-     * token的过期间隔（毫秒）
+     * token的过期间隔（秒）
      */
-    public static final long token_exp_interval = 7200000l;
+    public static final int token_exp_interval = 7200;
 }

@@ -2,9 +2,13 @@ package com.github.springcloud.service;
 
 import com.github.springcloud.jwt.JwtAuthResponse;
 
+import java.util.Map;
+
 /**
  * Created by ganzhen on 17/01/2018.
  */
 public interface AuthService {
-    JwtAuthResponse login(String username, String password);
+    public JwtAuthResponse login(String username, String password);
+
+    public Map<String,Object> validateToken(String token);
 }

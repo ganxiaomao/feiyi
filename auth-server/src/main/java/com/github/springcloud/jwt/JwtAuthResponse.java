@@ -9,6 +9,8 @@ import java.io.Serializable;
 public class JwtAuthResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     private String token;
+    private String code;
+    private String msg;
 
     public JwtAuthResponse(String token){
         this.token = token;
@@ -22,5 +24,21 @@ public class JwtAuthResponse implements Serializable {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }
