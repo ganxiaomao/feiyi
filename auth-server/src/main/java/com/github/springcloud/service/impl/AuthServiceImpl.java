@@ -1,20 +1,22 @@
 package com.github.springcloud.service.impl;
 
+import com.github.springcloud.configuration.JwtConfiguration;
 import com.github.springcloud.entity.ClientEntity;
 import com.github.springcloud.jwt.JwtAuthResponse;
-import com.github.springcloud.jwt.JwtAuthResponseCode;
+import com.github.springcloud.common.JwtAuthResponseCode;
 import com.github.springcloud.jwt.JwtTokenUtils;
 import com.github.springcloud.mapper.ClientMapper;
 import com.github.springcloud.service.AuthService;
+import com.github.springcloud.vo.AuthInfo;
 import com.google.common.collect.ImmutableMap;
-import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +34,7 @@ public class AuthServiceImpl implements AuthService{
     ClientMapper clientMapper;
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public JwtAuthResponse login(String username, String password) {
         logger.info("username="+username+";password="+password);
         JwtAuthResponse response = new JwtAuthResponse("defaultToken");
@@ -47,8 +50,15 @@ public class AuthServiceImpl implements AuthService{
             ClientEntity entity = clientMapper.selectOneByNameAndPassword(params);
             if(entity != null){
                 try {
-                    token = jwtTokenUtils.generateToken(entity.getId());
-
+                    //首先判断是否有旧token，有的话是否过期
+                    token = entity.getToken();
+                    if(StringUtils.isBlank(token)){
+                        token = jwtTokenUtils.generateToken(entity.getId());
+                        //更新token
+                        entity.setToken(token);
+                        entity.setExpireInterval(JwtConfiguration.token_exp_interval*1000l);
+                        clientMapper.updateByPrimaryKey(entity);
+                    }
                 } catch (Exception e) {
                     logger.error("Error in AuthServiceImpl.login",e);
                     code = JwtAuthResponseCode.response_code_token_generate_fail;//生成失败
@@ -76,7 +86,8 @@ public class AuthServiceImpl implements AuthService{
         String code = "0001";
         String msg = "验证失败";
         try {
-            String id = jwtTokenUtils.getIdFromToken(token);
+            AuthInfo ai = jwtTokenUtils.getInfoFromToken(token);
+            String id = ai.getId();
             ClientEntity query = new ClientEntity();
             query.setId(id);
             ClientEntity entity = clientMapper.selectOne(query);
@@ -90,4 +101,5 @@ public class AuthServiceImpl implements AuthService{
         }
         return ImmutableMap.of("success",success,"code",code,"msg",msg);
     }
+
 }
