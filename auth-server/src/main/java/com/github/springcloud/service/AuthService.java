@@ -10,5 +10,5 @@ import java.util.Map;
 public interface AuthService {
     public JwtAuthResponse login(String username, String password);
 
-    public Map<String,Object> validateToken(String token);
+    public JwtAuthResponse validateToken(String token);
 }

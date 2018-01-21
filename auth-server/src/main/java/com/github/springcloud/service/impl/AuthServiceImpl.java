@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class AuthServiceImpl implements AuthService{
         JwtAuthResponse response = new JwtAuthResponse("defaultToken");
 
         String token = "";
-        String code = "0000";
+        String code = JwtAuthResponseCode.response_code_do_success;
         String msg = "token生成成功";
         if(StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)){
             Map<String,Object> params = new HashMap<>();
@@ -81,25 +82,49 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public Map<String, Object> validateToken(String token) {
+    public JwtAuthResponse validateToken(String token) {
+        JwtAuthResponse response = new JwtAuthResponse();
         boolean success = false;
         String code = "0001";
         String msg = "验证失败";
         try {
             AuthInfo ai = jwtTokenUtils.getInfoFromToken(token);
             String id = ai.getId();
-            ClientEntity query = new ClientEntity();
-            query.setId(id);
-            ClientEntity entity = clientMapper.selectOne(query);
-            if(entity != null){
-                success = true;
-                code = "0000";
-                msg = "验证成功";
+            Date expDate = ai.getExpDate();
+            long expMilli = expDate==null?0l:expDate.getTime();
+            //首先判断日期是否过期
+            long nowMilli = System.currentTimeMillis();
+            if(nowMilli>=expMilli){
+                success = false;
+                code = JwtAuthResponseCode.response_code_token_validate_expire;
+                msg = "token过期";
             }
+            else{
+                ClientEntity query = new ClientEntity();
+                query.setId(id);
+                ClientEntity entity = clientMapper.selectOne(query);
+                if(entity != null){
+                    success = true;
+                    code = JwtAuthResponseCode.response_code_do_success;
+                    msg = "验证成功";
+                }
+                else{
+                    success = false;
+                    code = JwtAuthResponseCode.response_code_token_validate_authfail;
+                    msg = "token验证失败，携带用户信息有误";
+                }
+            }
+
         } catch (Exception e) {
+            success = false;
+            code = JwtAuthResponseCode.response_code_do_fail;
+            msg = "token验证失败，系统内部错误";
             logger.error("Error in AuthServiceImpl.validateToken:",e);
         }
-        return ImmutableMap.of("success",success,"code",code,"msg",msg);
+        response.setToken(token);
+        response.setCode(code);
+        response.setMsg(msg);
+        return response;
     }
 
 }

@@ -34,4 +34,10 @@ public class AuthController {
         }
         return ResponseEntity.ok(null);
     }
+
+    @RequestMapping(value="valid",method=RequestMethod.GET)
+    public ResponseEntity<?> validToken(String token){
+        JwtAuthResponse response = authService.validateToken(token);
+        return ResponseEntity.ok(response);
+    }
 }
