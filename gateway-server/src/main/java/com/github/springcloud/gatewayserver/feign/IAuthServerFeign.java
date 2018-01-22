@@ -14,7 +14,7 @@ public interface IAuthServerFeign {
     @RequestMapping(value="/jwt/token",method= RequestMethod.POST)
     public ResponseEntity<?> createAuthToken(@RequestParam("userName") String username, @RequestParam("password") String password);
 
-    @RequestMapping(value="/jwt/token",method= RequestMethod.GET)
+    @RequestMapping(value="/jwt/valid",method= RequestMethod.GET)
     public ResponseEntity<?> validToken(@RequestParam("token") String token);
 
 }

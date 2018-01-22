@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -54,16 +55,29 @@ public class GatewayFilter extends ZuulFilter{
         final String method = request.getMethod();
         //获取请求中得token
         String token = request.getParameter("token");
+        if(StringUtils.isEmpty(token)){
+            ctx.setSendZuulResponse(false);//不对其进行路由
+            ctx.setResponseStatusCode(401);
+            ctx.setResponseBody("必须有token参数");//返回错误内容
+            ctx.set("success",false);
+            return null;
+        }
         request.getParameterMap();
         ResponseEntity<?> entity = iAuthServerFeign.validToken(token);
         Object body = entity.getBody();
+        LinkedHashMap<String,String> lm = (LinkedHashMap<String, String>) body;
         if(body != null){
-            JSONObject jo = JSONObject.parseObject(body.toString());
-            String code = jo.getString("code");
+            String code = lm.get("code");
             if(StringUtils.isNotEmpty(code) && code.equals("0000")){
+                ctx.setSendZuulResponse(true);//不对其进行路由
+                ctx.setResponseStatusCode(200);
+                ctx.setResponseBody(lm.get("msg"));//返回错误内容
+                ctx.set("success",true);
+            }
+            else {
                 ctx.setSendZuulResponse(false);//不对其进行路由
                 ctx.setResponseStatusCode(401);
-                ctx.setResponseBody(jo.toJSONString());//返回错误内容
+                ctx.setResponseBody(lm.get("msg"));//返回错误内容
                 ctx.set("success",false);
             }
         }
