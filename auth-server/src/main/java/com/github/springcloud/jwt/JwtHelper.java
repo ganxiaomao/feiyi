@@ -6,25 +6,28 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.joda.time.DateTime;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
 /**
  * Created by ganzhen on 19/01/2018.
  */
 public class JwtHelper {
-    private static RsaHelper rsaHelper;
+    private static RsaHelper rsaHelper = new RsaHelper();
 
-    public static String generateTokenByPrivateKey(String id, byte[] rsaPrivateKey, int expSeconds) throws Exception {
+    public static String generateTokenByPrivateKey(String id, PrivateKey rsaPrivateKey, int expSeconds) throws Exception {
         String token = "";
         token = Jwts.builder()
                 .setSubject(id)
                 .setExpiration(DateTime.now().plusSeconds(expSeconds).toDate())
-                .signWith(SignatureAlgorithm.HS256,rsaHelper.getPrivateKey(rsaPrivateKey))
+                .signWith(SignatureAlgorithm.RS256,rsaPrivateKey)//很多例子用的都是HS256，但这个会一直提醒你用的privatekey不是一个secretkey，所以此处改成RS256
                 .compact();
         return token;
     }
 
-    public static Jws<Claims> parserToken(String token, byte[] rsaPublicKey) throws Exception {
+    public static Jws<Claims> parserToken(String token, PublicKey rsaPublicKey) throws Exception {
         Jws<Claims> claims = Jwts.parser()
-                .setSigningKey(rsaHelper.getPublicKey(rsaPublicKey))
+                .setSigningKey(rsaPublicKey)
                 .parseClaimsJws(token);
         return claims;
     }

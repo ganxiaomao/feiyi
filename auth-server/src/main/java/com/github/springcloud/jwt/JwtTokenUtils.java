@@ -28,7 +28,7 @@ public class JwtTokenUtils {
      * @throws Exception
      */
     public String generateToken(String id) throws Exception {
-        return JwtHelper.generateTokenByPrivateKey(id,rsaConfiguration.getPriKey(), JwtConfiguration.token_exp_interval);
+        return JwtHelper.generateTokenByPrivateKey(id,rsaConfiguration.getPrivateKey(), JwtConfiguration.token_exp_interval);
     }
 
     /**
@@ -39,7 +39,7 @@ public class JwtTokenUtils {
      */
     public AuthInfo getInfoFromToken(String token) throws Exception {
         String id = "";
-        Jws<Claims> claims = JwtHelper.parserToken(token, rsaConfiguration.getPubKey());
+        Jws<Claims> claims = JwtHelper.parserToken(token, rsaConfiguration.getPublicKey());
         Claims body = claims.getBody();
         id = body.getSubject();
         Date expDate = body.getExpiration();
