@@ -24,6 +24,7 @@
 
     <modules>
         <module>feiyi-center</module>
+        <module>base-common</module>
     </modules>
 
     <dependencies>
