@@ -57,5 +57,5 @@ public abstract class BaseBiz<M extends Mapper<T>,T> {
     public int updateSelectiveById(T entity){
         return mapper.updateByPrimaryKeySelective(entity);
     }
-    
+
 }
