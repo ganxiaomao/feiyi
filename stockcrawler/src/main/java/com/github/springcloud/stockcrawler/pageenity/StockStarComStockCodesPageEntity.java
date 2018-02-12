@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 证券之星网站的股票全部代码页面实体类，对应地址（http://quote.stockstar.com/stock/stock_index.htm）
  */
-@Gecco(matchUrl = "http://quote.stockstar.com/stock/stock_index.htm",pipelines = {"consolePipeline","stockStarComStockCodesPipeline"})
+@Gecco(matchUrl = "http://quote.stockstar.com/stock/stock_index.htm",pipelines = {"stockStarComPipeline","consolePipeline"})
 public class StockStarComStockCodesPageEntity implements HtmlBean {
     private static final long serialVersionUID = 1L;
 

@@ -6,6 +6,8 @@ import com.geccocrawler.gecco.annotation.Text;
 import com.geccocrawler.gecco.spider.HrefBean;
 import com.geccocrawler.gecco.spider.HtmlBean;
 
+import java.util.List;
+
 /**
  * Created by ganzhen on 11/02/2018.
  */
@@ -23,6 +25,9 @@ public class StockStarCodeAndName implements HtmlBean {
     @Text
     @HtmlField(cssPath = "a")
     private String stockName;
+
+    @HtmlField(cssPath = "a")
+    private List<HrefBean> urls;
 
     public String getStockCode() {
         return stockCode;
@@ -46,5 +51,13 @@ public class StockStarCodeAndName implements HtmlBean {
 
     public void setStockName(String stockName) {
         this.stockName = stockName;
+    }
+
+    public List<HrefBean> getUrls() {
+        return urls;
+    }
+
+    public void setUrls(List<HrefBean> urls) {
+        this.urls = urls;
     }
 }

@@ -58,3 +58,9 @@ eureka:
   client:
     service-url:
       defaultZone:  http://localhost:27001/eureka,http://localhost:27002/eureka
+mapper:
+  mappers: tk.mybatis.mapper.common.Mapper
+  not-empty: false
+  identity: MYSQL
+  style: camelhump
+  before: true

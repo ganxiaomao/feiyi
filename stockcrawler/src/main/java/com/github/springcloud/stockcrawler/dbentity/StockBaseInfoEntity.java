@@ -12,7 +12,8 @@ import java.util.Date;
 @Data
 public class StockBaseInfoEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY,generator = "select uuid()")
     private String id;
 
     /**
