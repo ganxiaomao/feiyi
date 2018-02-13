@@ -64,3 +64,9 @@ mapper:
   identity: MYSQL
   style: camelhump
   before: true
+
+quartz:
+  enabled: true
+
+samplejob:
+  frequency: 2000
