@@ -11,6 +11,8 @@ import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
+import com.google.common.collect.Lists;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,8 +62,31 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     public ResultVo crawlBaiduStockDetail() {
         //从数据表里找数据
         List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectAll();
-        //组织成url数组
-        String[] urls = {};
+        //组织成url列表
+        int size = entities.size();
+        String[] urls = new String[size];
+        int index = 0;
+        for(StockBaseInfoEntity entity : entities){
+            String url = "";
+            if(entity.getStockType() == 1)
+                url = "https://gupiao.baidu.com/stock/sh"+entity.getStockCode()+".html";
+            else
+                url = "https://gupiao.baidu.com/stock/sz"+entity.getStockCode()+".html";
+            urls[index] = url;
+            index++;
+            break;
+        }
+        logger.info("本次股票详情地址共"+urls.length+"条");
+        GeccoEngine.create()
+                .pipelineFactory(springPipelineFactory)
+                //如果pipeline和htmlbean不在同一个包，classpath就要设置到他们的共同父包
+                .classpath("com.github.springcloud.stockcrawler")
+                .start("")
+                .thread(1)
+                .interval(2000)
+                .loop(false)
+                .mobile(false)
+                .start();
         return null;
     }
 

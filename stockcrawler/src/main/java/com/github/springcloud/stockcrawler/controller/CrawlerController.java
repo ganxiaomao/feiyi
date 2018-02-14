@@ -18,9 +18,15 @@ public class CrawlerController {
     @Autowired
     private StockCrawlerService stockCrawlerService;
 
-    @RequestMapping(value="crwalStockStar",method= RequestMethod.GET)
-    public ResponseEntity<?> crwalStockStar(){
+    @RequestMapping(value="crawlStockStar",method= RequestMethod.GET)
+    public ResponseEntity<?> crawlStockStar(){
         stockCrawlerService.crawlStockBaseInfo();
+        return ResponseEntity.ok(true);
+    }
+
+    @RequestMapping(value="crawlBaiduStockDetail",method = RequestMethod.GET)
+    public ResponseEntity<?> crawlBaiduStockDetail(){
+        stockCrawlerService.crawlBaiduStockDetail();
         return ResponseEntity.ok(true);
     }
 }
