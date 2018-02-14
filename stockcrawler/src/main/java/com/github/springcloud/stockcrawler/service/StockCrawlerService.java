@@ -13,6 +13,8 @@ public interface StockCrawlerService {
 
     public ResultVo crawlStockBaseInfo();
 
+    public ResultVo crawlBaiduStockDetail();
+
     public ResultVo stockBaseInfoBatchSave(List<StockBaseInfoEntity> entities);
 
     public ResultVo baiduStockDetailSave(StockDetailDayRecordEntity entity);

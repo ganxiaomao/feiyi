@@ -10,19 +10,17 @@ import com.geccocrawler.gecco.request.HttpRequest;
  */
 public class StarStockTest {
     public static void main(String[] args){
-        /*HttpRequest request = new HttpGetRequest("http://quote.stockstar.com/stock/stock_index.htm");
+        HttpRequest request = new HttpGetRequest("https://gupiao.baidu.com/stock/sh601766.html");
         //查看网站的编码，填充在这里
-        request.setCharset("gb2312");
+        //request.setCharset("gb2312");
         GeccoEngine.create()
                 //如果pipeline和htmlbean不在同一个包，classpath就要设置到他们的共同父包
                 .classpath("com.github.springcloud.stockcrawler")
-                .start(request)
+                .start("https://gupiao.baidu.com/stock/sh601766.html","https://gupiao.baidu.com/stock/sh601989.html")
                 .thread(1)
                 .interval(2000)
                 .loop(false)
                 .mobile(false)
-                .run();*/
-        UUID uuid = new UUID();
-        System.out.println(uuid.toString());
+                .run();
     }
 }

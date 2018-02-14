@@ -57,6 +57,15 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     }
 
     @Override
+    public ResultVo crawlBaiduStockDetail() {
+        //从数据表里找数据
+        List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectAll();
+        //组织成url数组
+        String[] urls = {};
+        return null;
+    }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ResultVo stockBaseInfoBatchSave(List<StockBaseInfoEntity> entities) {
         if(entities != null){
