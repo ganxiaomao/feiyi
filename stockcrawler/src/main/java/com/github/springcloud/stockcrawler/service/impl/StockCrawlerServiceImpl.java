@@ -4,14 +4,19 @@ import com.geccocrawler.gecco.GeccoEngine;
 import com.geccocrawler.gecco.pipeline.PipelineFactory;
 import com.geccocrawler.gecco.request.HttpGetRequest;
 import com.geccocrawler.gecco.request.HttpRequest;
+import com.github.pagehelper.PageRowBounds;
 import com.github.springcloud.stockcrawler.dbdao.StockBaseInfoDao;
+import com.github.springcloud.stockcrawler.dbdao.StockDetailDayRecordDao;
 import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
+import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -25,6 +30,9 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
 
     @Autowired
     private StockBaseInfoDao stockBaseInfoDao;
+
+    @Autowired
+    private StockDetailDayRecordDao stockDetailDayRecordDao;
 
     @Resource(name="springPipelineFactory")
     private PipelineFactory springPipelineFactory;
@@ -49,6 +57,7 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ResultVo stockBaseInfoBatchSave(List<StockBaseInfoEntity> entities) {
         if(entities != null){
             for(StockBaseInfoEntity entity : entities)
@@ -58,5 +67,21 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
                 stockBaseInfoDao.insert(entity);
         }
         return new ResultVo(true,null,"保存成功");
+    }
+
+    @Override
+    public ResultVo baiduStockDetailSave(StockDetailDayRecordEntity entity) {
+        ResultVo vo = new ResultVo();
+        try{
+            stockDetailDayRecordDao.insert(entity);
+            vo.success(entity.getId(),"保存成功");
+        }
+        catch(Exception e)
+        {
+            vo.fail(null,"保存失败");
+            logger.info("保存异常：",e);
+        }
+
+        return vo;
     }
 }

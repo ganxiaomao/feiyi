@@ -5,11 +5,13 @@ import com.geccocrawler.gecco.annotation.Html;
 import com.geccocrawler.gecco.annotation.HtmlField;
 import com.geccocrawler.gecco.annotation.Text;
 import com.geccocrawler.gecco.spider.HtmlBean;
+import lombok.Data;
 
 /**
  * Created by ganzhen on 13/02/2018.
  */
-@Gecco(matchUrl = "https://gupiao.baidu.com/stock/{code}.html",pipelines = {"stockStarComPipeline","consolePipeline"})
+@Gecco(matchUrl = "https://gupiao.baidu.com/stock/{code}.html",pipelines = {"baiduStockDetailPipeLine","consolePipeline"})
+@Data
 public class BaiduStockDetail implements HtmlBean {
 
     @Text

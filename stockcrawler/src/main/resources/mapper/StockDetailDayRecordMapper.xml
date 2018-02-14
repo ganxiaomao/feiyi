@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.springcloud.stockcrawler.dbdao.StockBaseInfoDao" >
+    <resultMap id="BaseResultMap" type="com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="jin_kai" property="jinKai" jdbcType="DECIMAL" />
+        <result column="zuo_shou" property="zuoShou" jdbcType="DECIMAL" />
+        <result column="cheng_jiao_liang" property="chengJiaoLiang" jdbcType="DECIMAL" />
+        <result column="huan_shou_lv" property="huanShouLv" jdbcType="DECIMAL" />
+        <result column="zui_gao" property="zuiGao" jdbcType="DECIMAL" />
+        <result column="zui_di" property="zuiDi" jdbcType="DECIMAL" />
+        <result column="zhang_ting" property="zhangTing" jdbcType="DECIMAL" />
+        <result column="die_ting" property="dieTing" jdbcType="DECIMAL" />
+        <result column="nei_pan" property="neiPan" jdbcType="DECIMAL" />
+        <result column="wai_pan" property="waiPan" jdbcType="DECIMAL" />
+        <result column="cheng_jiao_e" property="chengJiaoE" jdbcType="DECIMAL" />
+        <result column="zhen_fu" property="zhenFu" jdbcType="DECIMAL" />
+        <result column="wei_bi" property="weiBi" jdbcType="DECIMAL" />
+        <result column="liang_bi" property="liangBi" jdbcType="DECIMAL" />
+        <result column="liu_tong_shi_zhi" property="liuTongShiZhi" jdbcType="DECIMAL" />
+        <result column="zong_shi_zhi" property="zongShiZhi" jdbcType="DECIMAL" />
+        <result column="shi_ying_lv" property="shiYingLv" jdbcType="DECIMAL" />
+        <result column="shi_jing_lv" property="shiJingLv" jdbcType="DECIMAL" />
+        <result column="mei_gu_shou_yi" property="meiGuShouYi" jdbcType="DECIMAL" />
+        <result column="mei_gu_jing_zi_chan" property="meiGuJingZiChan" jdbcType="DECIMAL" />
+        <result column="zong_gu_ben" property="zongGuBen" jdbcType="DECIMAL" />
+        <result column="liu_tong_gu_ben" property="liuTongGuBen" jdbcType="DECIMAL" />
+        <result column="create_time" property="createTime" jdbcType="DATE" />
+    </resultMap>
+
+</mapper>

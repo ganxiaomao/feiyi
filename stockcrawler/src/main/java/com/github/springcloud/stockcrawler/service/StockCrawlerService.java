@@ -1,6 +1,7 @@
 package com.github.springcloud.stockcrawler.service;
 
 import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
+import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface StockCrawlerService {
     public ResultVo crawlStockBaseInfo();
 
     public ResultVo stockBaseInfoBatchSave(List<StockBaseInfoEntity> entities);
+
+    public ResultVo baiduStockDetailSave(StockDetailDayRecordEntity entity);
 }
