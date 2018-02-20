@@ -5,6 +5,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+import org.quartz.ee.servlet.QuartzInitializerListener;
 import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,80 +30,35 @@ import java.util.Properties;
 @Configuration
 @ConditionalOnProperty(name = "quartz.enabled")
 public class SchedulerConfig {
-    @Bean
-    public JobFactory jobFactory(ApplicationContext applicationContext,
-                                 // injecting SpringLiquibase to ensure liquibase is already initialized and created the quartz tables:
-                                 SpringLiquibase springLiquibase)
-    {
-        AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
-        jobFactory.setApplicationContext(applicationContext);
-        return jobFactory;
-    }
-
-    @Bean
-    public Scheduler schedulerFactoryBean(DataSource dataSource, JobFactory jobFactory,
-                                          @Qualifier("sampleJobTrigger") Trigger sampleJobTrigger) throws Exception {
+    @Bean(name="SchedulerFactory")
+    public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
-        // this allows to update triggers in DB when updating settings in config file:
-        factory.setOverwriteExistingJobs(true);
-        factory.setDataSource(dataSource);
-        factory.setJobFactory(jobFactory);
-
         factory.setQuartzProperties(quartzProperties());
-        factory.afterPropertiesSet();
-
-        Scheduler scheduler = factory.getScheduler();
-        scheduler.setJobFactory(jobFactory);
-        scheduler.scheduleJob((JobDetail) sampleJobTrigger.getJobDataMap().get("jobDetail"), sampleJobTrigger);
-
-        scheduler.start();
-        return scheduler;
+        return factory;
     }
 
     @Bean
     public Properties quartzProperties() throws IOException {
         PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
         propertiesFactoryBean.setLocation(new ClassPathResource("/quartz.properties"));
+        //在quartz.properties中的属性被读取并注入后再初始化对象
         propertiesFactoryBean.afterPropertiesSet();
         return propertiesFactoryBean.getObject();
     }
 
+    /*
+     * quartz初始化监听器
+     */
     @Bean
-    public JobDetailFactoryBean sampleJobDetail() {
-        return createJobDetail(SampleJob.class);
+    public QuartzInitializerListener executorListener() {
+        return new QuartzInitializerListener();
     }
 
-    @Bean(name = "sampleJobTrigger")
-    public SimpleTriggerFactoryBean sampleJobTrigger(@Qualifier("sampleJobDetail") JobDetail jobDetail,
-                                                     @Value("${samplejob.frequency}") long frequency) {
-        return createTrigger(jobDetail, frequency);
-    }
-
-    private static JobDetailFactoryBean createJobDetail(Class jobClass) {
-        JobDetailFactoryBean factoryBean = new JobDetailFactoryBean();
-        factoryBean.setJobClass(jobClass);
-        // job has to be durable to be stored in DB:
-        factoryBean.setDurability(true);
-        return factoryBean;
-    }
-
-    private static SimpleTriggerFactoryBean createTrigger(JobDetail jobDetail, long pollFrequencyMs) {
-        SimpleTriggerFactoryBean factoryBean = new SimpleTriggerFactoryBean();
-        factoryBean.setJobDetail(jobDetail);
-        factoryBean.setStartDelay(0L);
-        factoryBean.setRepeatInterval(pollFrequencyMs);
-        factoryBean.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        // in case of misfire, ignore all missed triggers and continue :
-        factoryBean.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT);
-        return factoryBean;
-    }
-
-    // Use this method for creating cron triggers instead of simple triggers:
-    private static CronTriggerFactoryBean createCronTrigger(JobDetail jobDetail, String cronExpression) {
-        CronTriggerFactoryBean factoryBean = new CronTriggerFactoryBean();
-        factoryBean.setJobDetail(jobDetail);
-        factoryBean.setCronExpression(cronExpression);
-        factoryBean.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
-        return factoryBean;
+    /*
+     * 通过SchedulerFactoryBean获取Scheduler的实例
+     */
+    @Bean(name="Scheduler")
+    public Scheduler scheduler() throws IOException {
+        return schedulerFactoryBean().getScheduler();
     }
 }

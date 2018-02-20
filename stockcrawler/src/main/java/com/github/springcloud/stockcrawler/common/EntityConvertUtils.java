@@ -1,6 +1,5 @@
 package com.github.springcloud.stockcrawler.common;
 
-import com.github.springcloud.stockcrawler.dbdao.MyMapper;
 import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.pageenity.BaiduStockDetail;
 

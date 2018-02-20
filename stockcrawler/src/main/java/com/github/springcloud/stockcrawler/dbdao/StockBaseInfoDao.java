@@ -1,6 +1,8 @@
 package com.github.springcloud.stockcrawler.dbdao;
 
+import com.github.springcloud.stockcrawler.MyMapper;
 import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
+import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 

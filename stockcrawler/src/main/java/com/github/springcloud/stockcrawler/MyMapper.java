@@ -1,4 +1,4 @@
-package com.github.springcloud.stockcrawler.dbdao;
+package com.github.springcloud.stockcrawler;
 
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.common.MySqlMapper;
