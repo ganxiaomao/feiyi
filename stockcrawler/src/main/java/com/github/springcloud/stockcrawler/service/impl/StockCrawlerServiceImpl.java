@@ -74,7 +74,6 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
                 url = "https://gupiao.baidu.com/stock/sz"+entity.getStockCode()+".html";
             urls[index] = url;
             index++;
-            break;
         }
         logger.info("本次股票详情地址共"+urls.length+"条");
         GeccoEngine.create()
