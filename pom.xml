@@ -23,8 +23,11 @@
     </properties>
 
     <modules>
-        <module>feiyi-center</module>
+        <module>auth-server</module>
         <module>base-common</module>
+        <module>feiyi-center</module>
+        <module>gateway-server</module>
+        <module>stockcrawler</module>
     </modules>
 
     <dependencies>
