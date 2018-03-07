@@ -54,5 +54,11 @@
             <artifactId>guava</artifactId>
             <version>23.6-jre</version>
         </dependency>
+        <!-- httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5-parent</artifactId>
+            <version>5.0-beta1</version>
+        </dependency>
     </dependencies>
 </project>
