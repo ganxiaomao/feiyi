@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.springcloud.stockcrawler.dbdao.IndexDailyAnalysisDao" >
+    <resultMap id="BaseResultMap" type="com.github.springcloud.stockcrawler.dbentity.IndexDailyAnalysisEntity" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="index_id" property="indexId" jdbcType="VARCHAR" />
+        <result column="pb" property="pb" jdbcType="DECIMAL" />
+        <result column="pe_ttm" property="peTtm" jdbcType="DECIMAL" />
+        <result column="pe_degree" property="peDegree" jdbcType="DECIMAL" />
+        <result column="funding_degree" property="fundingDegree" jdbcType="DECIMAL" />
+        <result column="analysis_time" property="analysisTime" jdbcType="DATE" />
+    </resultMap>
+
+    <select id="selectDatasByFundingId" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT sbi.* FROM financial_index_daily_analysis sbi where sbi.funding_id like CONCAT('%',#{fundingId},'%')
+    </select>
+</mapper>

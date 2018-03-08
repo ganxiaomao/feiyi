@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.springcloud.stockcrawler.dbdao.IndexBaseInfoDao" >
+    <resultMap id="BaseResultMap" type="com.github.springcloud.stockcrawler.dbentity.IndexBaseInfoEntity" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="index_name" property="indexName" jdbcType="VARCHAR" />
+        <result column="index_code" property="indexCode" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="DATE" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+        <result column="record_time" property="recordTime" jdbcType="DATE" />
+    </resultMap>
+
+    <select id="selectOneByIndexCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        sbi.*
+        FROM
+        financial_index_base_info sbi where sbi.index_code = #{indexCode,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectDatasByIndexName" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT sbi.* FROM financial_index_base_info sbi where sbi.index_name like CONCAT('%',#{indexName},'%')
+    </select>
+</mapper>

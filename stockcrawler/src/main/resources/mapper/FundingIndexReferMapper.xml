@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.springcloud.stockcrawler.dbdao.FundingIndexReferDao" >
+    <resultMap id="BaseResultMap" type="com.github.springcloud.stockcrawler.dbentity.FundingIndexReferEntity" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="index_id" property="indexId" jdbcType="VARCHAR" />
+        <result column="funding_id" property="fundingId" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectOneByIndexId" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        sbi.*
+        FROM
+        financial_funding_index_refer sbi where sbi.index_id = #{indexId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectDatasByFundingId" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT sbi.* FROM financial_funding_index_refer sbi where sbi.funding_id like CONCAT('%',#{fundingId},'%')
+    </select>
+</mapper>
