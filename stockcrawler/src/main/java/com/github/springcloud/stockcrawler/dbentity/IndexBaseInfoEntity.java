@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -48,4 +49,10 @@ public class IndexBaseInfoEntity implements Serializable{
      */
     @Column(name = "status")
     private int status;
+
+    /**
+     * 近三年净资产收益率,百分比的数字部分，比如10.23%，这里就是10.23
+     */
+    @Column(name = "latest_three_year_roe")
+    private BigDecimal latestThreeYearRoe;
 }

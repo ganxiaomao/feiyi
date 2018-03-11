@@ -72,4 +72,10 @@ public class FundingBaseInfoEntity implements Serializable {
      */
     @Column(name = "status")
     private int statues;
+
+    /**
+     * 近3年及以上的平均收益率
+     */
+    @Column(name = "lately_year_rate_return")
+    private BigDecimal latelytYearRateReturn;
 }

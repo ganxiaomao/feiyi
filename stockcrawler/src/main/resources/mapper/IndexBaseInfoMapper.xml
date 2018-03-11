@@ -11,6 +11,7 @@
         <result column="create_time" property="createTime" jdbcType="DATE" />
         <result column="status" property="status" jdbcType="INTEGER" />
         <result column="record_time" property="recordTime" jdbcType="DATE" />
+        <result column="latest_three_year_roe" property="latestThreeYearRoe" jdbcType="DECIMAL" />
     </resultMap>
 
     <select id="selectOneByIndexCode" resultMap="BaseResultMap" parameterType="java.lang.String">
