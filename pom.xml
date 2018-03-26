@@ -28,6 +28,7 @@
         <module>feiyi-center</module>
         <module>gateway-server</module>
         <module>stockcrawler</module>
+        <module>teccom-xcx</module>
     </modules>
 
     <dependencies>
