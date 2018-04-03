@@ -18,4 +18,4 @@
     <select id="selectDatasByFundingId" resultMap="BaseResultMap" parameterType="java.lang.String">
         SELECT sbi.* FROM financial_index_daily_analysis sbi where sbi.funding_id like CONCAT('%',#{fundingId},'%')
     </select>
-</mapper>D
+</mapper>

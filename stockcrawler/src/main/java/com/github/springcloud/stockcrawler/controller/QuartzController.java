@@ -40,7 +40,7 @@ public class QuartzController {
             String id = "";
             try {
                 //先保存
-                id = quartzService.addJob2Mysql(jobClassName,jobGroupName,cronExpression);
+                id = "1";//quartzService.addJob2Mysql(jobClassName,jobGroupName,cronExpression);
                 if(!Strings.isNullOrEmpty(id)){
                     //启动调度器
                     scheduler.start();
@@ -55,7 +55,7 @@ public class QuartzController {
                 }
             } catch (Exception e) {
                 res = false;
-                logger.info("添加定时任务失败:",e.getCause());
+                logger.info("添加定时任务失败:",e);
             }
         }
         return ResponseEntity.ok(res);

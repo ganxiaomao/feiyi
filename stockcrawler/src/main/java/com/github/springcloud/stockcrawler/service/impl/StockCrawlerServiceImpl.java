@@ -117,4 +117,9 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
 
         return vo;
     }
+
+    @Override
+    public void quartzTest() {
+        logger.info("quartz测试数据："+Math.random()+"");
+    }
 }

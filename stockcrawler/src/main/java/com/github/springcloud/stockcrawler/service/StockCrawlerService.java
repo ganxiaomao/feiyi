@@ -18,4 +18,6 @@ public interface StockCrawlerService {
     public ResultVo stockBaseInfoBatchSave(List<StockBaseInfoEntity> entities);
 
     public ResultVo baiduStockDetailSave(StockDetailDayRecordEntity entity);
+
+    public void quartzTest();
 }

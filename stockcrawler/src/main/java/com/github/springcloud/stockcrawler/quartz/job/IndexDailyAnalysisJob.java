@@ -20,7 +20,7 @@ public class IndexDailyAnalysisJob implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        _log.info("开始每日指数分析任务");
-        stockCrawlerServiceImpl.crawlStockBaseInfo();
+        _log.info("开始每日指数分析任务，当前时间："+System.currentTimeMillis());
+        stockCrawlerServiceImpl.quartzTest();//.crawlStockBaseInfo();
     }
 }
