@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IndexDailyAnalysisJob implements BaseJob {
     private static Logger _log = LoggerFactory.getLogger(IndexDailyAnalysisJob.class);
 
+    public IndexDailyAnalysisJob(){}
+
     @Autowired
     private StockCrawlerService stockCrawlerServiceImpl;
 

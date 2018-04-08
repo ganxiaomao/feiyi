@@ -17,25 +17,25 @@ import tk.mybatis.spring.annotation.MapperScan;
 @Configuration
 public class StockcrawlerApplication {
 
-	@Bean
-	public SpringGeccoEngine initGecco(){
-		return new SpringGeccoEngine() {
-			@Override
-			public void init() {
-				System.out.println("开始抓取");
-				HttpRequest request = new HttpGetRequest("http://quote.stockstar.com/stock/stock_index.htm");
-				//查看网站的编码，填充在这里
-				request.setCharset("gb2312");
-				GeccoEngine.create()
-						.pipelineFactory(springPipelineFactory)
-						.classpath("com.github.springcloud.stockcrawler")
-						.start(request)
-						.interval(3000)
-						.loop(false)
-						.start();
-			}
-		};
-	}
+//	@Bean
+//	public SpringGeccoEngine initGecco(){
+//		return new SpringGeccoEngine() {
+//			@Override
+//			public void init() {
+//				System.out.println("开始抓取");
+//				HttpRequest request = new HttpGetRequest("http://quote.stockstar.com/stock/stock_index.htm");
+//				//查看网站的编码，填充在这里
+//				request.setCharset("gb2312");
+//				GeccoEngine.create()
+//						.pipelineFactory(springPipelineFactory)
+//						.classpath("com.github.springcloud.stockcrawler")
+//						.start(request)
+//						.interval(3000)
+//						.loop(false)
+//						.start();
+//			}
+//		};
+//	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(StockcrawlerApplication.class, args);

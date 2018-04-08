@@ -11,6 +11,6 @@ public class TestJob implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-
+        _log.info("test"+System.currentTimeMillis());
     }
 }

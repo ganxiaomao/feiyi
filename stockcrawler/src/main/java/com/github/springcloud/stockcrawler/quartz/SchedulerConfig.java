@@ -7,6 +7,7 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.ee.servlet.QuartzInitializerListener;
 import org.quartz.spi.JobFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -30,10 +31,16 @@ import java.util.Properties;
 @Configuration
 @ConditionalOnProperty(name = "quartz.enabled")
 public class SchedulerConfig {
+
+    @Autowired
+    private MyJobFactory myJobFactory;
+
     @Bean(name="SchedulerFactory")
     public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
         SchedulerFactoryBean factory = new SchedulerFactoryBean();
         factory.setQuartzProperties(quartzProperties());
+        factory.setOverwriteExistingJobs(true);
+        factory.setJobFactory(myJobFactory);//自定义jobfactory，用于spring注入，防止job中的Autowired不可用
         return factory;
     }
 
@@ -60,5 +67,13 @@ public class SchedulerConfig {
     @Bean(name="Scheduler")
     public Scheduler scheduler() throws IOException {
         return schedulerFactoryBean().getScheduler();
+    }
+
+    @Bean
+    public JobFactory jobFactory(ApplicationContext applicationContext)
+    {
+        AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
+        jobFactory.setApplicationContext(applicationContext);
+        return jobFactory;
     }
 }

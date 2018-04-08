@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,8 +51,8 @@ public class QuartzController {
                     CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression);
                     //按照新的表达式，构建一个新的trigger
                     CronTrigger cronTrigger = TriggerBuilder.newTrigger().withIdentity(jobClassName,jobGroupName).withSchedule(scheduleBuilder).build();
-                    //添加任务
-                    scheduler.scheduleJob(cronTrigger);
+                    //添加任务：注意spring-core这个包的版本要大于5.0，不然会报找不到初始化方法的错误，只要吧springboot的版本升级到2.0以上就是了
+                    scheduler.scheduleJob(jobDetail,cronTrigger);
                 }
             } catch (Exception e) {
                 res = false;
