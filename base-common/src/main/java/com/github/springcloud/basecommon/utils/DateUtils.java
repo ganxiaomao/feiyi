@@ -153,4 +153,39 @@ public class DateUtils {
             throw new NullPointerException("one or both of date1 and date2 is null");
         return res;
     }
+
+    /**
+     * 给原始时间，加上一个规定类型的数值，获得结果时间
+     * @param org 原始时间
+     * @param add 加数
+     * @param type 类型：y，年；m，月；d，日；hour，时；min，分；sec，秒
+     * @return
+     */
+    public static Date plus(Date org, int add, String type){
+        Date res = null;
+        if(org != null && !Strings.isNullOrEmpty(type)){
+            DateTime dt = new DateTime(org);
+            switch(type){
+                case "y":
+                    res = dt.plusYears(add).toDate();
+                    break;
+                case "m":
+                    res = dt.plusMonths(add).toDate();
+                    break;
+                case "d":
+                    res = dt.plusDays(add).toDate();
+                    break;
+                case "hour":
+                    res = dt.plusHours(add).toDate();
+                    break;
+                case "min":
+                    res = dt.plusMinutes(add).toDate();
+                    break;
+                case "sec":
+                    res = dt.plusSeconds(add).toDate();
+                    break;
+            }
+        }
+        return res;
+    }
 }

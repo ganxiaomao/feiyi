@@ -20,4 +20,6 @@ public interface StockCrawlerService {
     public ResultVo baiduStockDetailSave(StockDetailDayRecordEntity entity);
 
     public void quartzTest();
+
+    public ResultVo crawlDailyStockInfoFromLixingren(String stockCode,String date);
 }

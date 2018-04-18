@@ -7,6 +7,7 @@ import org.springframework.scheduling.quartz.AdaptableJobFactory;
 import org.springframework.stereotype.Component;
 
 /**
+ * 实现在quartz的job中，能够用autowired
  * Created by ganzhen on 08/04/2018.
  */
 @Component

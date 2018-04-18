@@ -6,6 +6,7 @@
           WARNING - @mbg.generated
         -->
         <id column="id" property="id" jdbcType="VARCHAR" />
+        <id column="stock_code" property="stockCode" jdbcType="VARCHAR" />
         <result column="jin_kai" property="jinKai" jdbcType="DECIMAL" />
         <result column="zuo_shou" property="zuoShou" jdbcType="DECIMAL" />
         <result column="cheng_jiao_liang" property="chengJiaoLiang" jdbcType="DECIMAL" />

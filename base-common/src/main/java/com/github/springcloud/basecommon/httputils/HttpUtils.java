@@ -56,11 +56,12 @@ public class HttpUtils {
      * @return
      */
     public static String httpPostBody(String url, String body){
+        logger.info("url="+url+";body="+body);
         String responseStr = "";
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(url);
         httpPost.addHeader("Content-Type", default_header_content_type);
-        httpPost.addHeader("Content-Encoding","gzip");
+        //httpPost.addHeader("Content-Encoding","gzip");
         httpPost.setEntity(new StringEntity(body, Charset.forName("UTF-8")));
 
         HttpResult hr = excuteHttpRequest(httpClient,httpPost);

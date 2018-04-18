@@ -32,5 +32,21 @@ CREATE TABLE `financial_stock_detail_day_record` (
   `zong_gu_ben` decimal(18,2) DEFAULT NULL COMMENT '总股本，亿',
   `liu_tong_gu_ben` decimal(18,2) DEFAULT NULL COMMENT '流通股本，亿',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `stock_code` varchar(15) DEFAULT NULL COMMENT '股票编码',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `financial`.`financial_stock_daily_mental_info` (
+  `id` VARCHAR(36) NOT NULL,
+  `stock_code` VARCHAR(15) NULL COMMENT '股票代码',
+  `create_time` DATETIME NULL COMMENT '创建日期',
+  `date` DATETIME NULL COMMENT '数据产生的时间',
+  `pe_ttm` DECIMAL(18,4) NULL COMMENT '动态市盈率',
+  `d_pe_ttm` DECIMAL(18,4) NULL COMMENT '扣非动态市盈率',
+  `pb` DECIMAL(18,4) NULL COMMENT '市净率',
+  `pb_wo_gw` DECIMAL(18,4) NULL COMMENT '不含商誉的市净率',
+  `ps_ttm` DECIMAL(18,4) NULL COMMENT '滚动市销率',
+  `dividend_r` DECIMAL(18,4) NULL COMMENT '股息率',
+  `market_value` DECIMAL(18,4) NULL COMMENT '市值',
+  PRIMARY KEY (`id`));
+

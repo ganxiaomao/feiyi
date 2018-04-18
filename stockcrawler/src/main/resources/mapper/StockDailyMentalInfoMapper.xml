@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.springcloud.stockcrawler.dbdao.StockDailyMentalInfoDao" >
+    <resultMap id="BaseResultMap" type="com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <id column="stock_code" property="stockCode" jdbcType="VARCHAR" />
+        <result column="pe_ttm" property="pe_ttm" jdbcType="DECIMAL" />
+        <result column="d_pe_ttm" property="d_pe_ttm" jdbcType="DECIMAL" />
+        <result column="pb" property="pb" jdbcType="DECIMAL" />
+        <result column="pb_wo_gw" property="pb_wo_gw" jdbcType="DECIMAL" />
+        <result column="ps_ttm" property="ps_ttm" jdbcType="DECIMAL" />
+        <result column="dividend_r" property="dividend_r" jdbcType="DECIMAL" />
+        <result column="market_value" property="market_value" jdbcType="DECIMAL" />
+        <result column="create_time" property="createTime" jdbcType="DATE" />
+        <result column="date" property="date" jdbcType="DATE" />
+    </resultMap>
+
+</mapper>

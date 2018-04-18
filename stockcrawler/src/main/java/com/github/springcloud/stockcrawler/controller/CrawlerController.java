@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -28,5 +29,10 @@ public class CrawlerController {
     public ResponseEntity<?> crawlBaiduStockDetail(){
         stockCrawlerService.crawlBaiduStockDetail();
         return ResponseEntity.ok(true);
+    }
+
+    @RequestMapping(value="crawlStockMentalInfo",method = RequestMethod.GET)
+    public ResponseEntity<?> crawlStockMentalInfo(@RequestParam(value="stockCode") String stockCode,@RequestParam(value="date") String date){
+        return ResponseEntity.ok(stockCrawlerService.crawlDailyStockInfoFromLixingren(stockCode,date));
     }
 }

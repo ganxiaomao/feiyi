@@ -18,6 +18,9 @@ public class StockDetailDayRecordEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY,generator = "select uuid()")
     private String id;
 
+    @Column(name = "stock_code")
+    private String stockCode;
+
     /**
      * 今日开市股价
      */
