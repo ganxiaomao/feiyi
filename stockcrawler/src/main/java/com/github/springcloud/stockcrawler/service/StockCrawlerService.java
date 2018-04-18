@@ -22,4 +22,8 @@ public interface StockCrawlerService {
     public void quartzTest();
 
     public ResultVo crawlDailyStockInfoFromLixingren(String stockCode,String date);
+
+    public boolean updateStrockBaseInfo(StockBaseInfoEntity entity);
+
+    public StockBaseInfoEntity findOneStockBaseInfoByStockCode(String stockCode);
 }

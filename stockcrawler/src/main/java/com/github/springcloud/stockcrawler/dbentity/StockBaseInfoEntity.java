@@ -36,4 +36,10 @@ public class StockBaseInfoEntity {
 
     @Column(name = "create_time")
     private Date createTime;
+
+    /**
+     * 上市时间
+     */
+    @Column(name = "listed_time")
+    private Date listedTime;
 }

@@ -18,6 +18,7 @@ import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
@@ -176,6 +177,24 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         }
 
         return new ResultVo(true,null,"获取成功");
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean updateStrockBaseInfo(StockBaseInfoEntity entity) {
+        if(entity != null){
+            stockBaseInfoDao.updateByPrimaryKey(entity);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public StockBaseInfoEntity findOneStockBaseInfoByStockCode(String stockCode) {
+        if(!Strings.isNullOrEmpty(stockCode)){
+            return stockBaseInfoDao.selectOneByStockCode(stockCode);
+        }
+        return null;
     }
 
     public List<StockBaseInfoEntity> getAllStockBaseInfo(){

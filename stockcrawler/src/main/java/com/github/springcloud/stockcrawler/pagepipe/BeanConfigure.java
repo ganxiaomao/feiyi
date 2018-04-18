@@ -26,4 +26,9 @@ public class BeanConfigure {
 
     @Bean(name = "baiduStockDetailPipeLine")
     public BaiduStockDetailPipeLine baiduStockDetailPipeLine(){return new BaiduStockDetailPipeLine();}
+
+    @Bean(name = "stockStarBriefPipeline")
+    public StockStarBriefPipeline stockStarBriefPipeline(){
+        return new StockStarBriefPipeline();
+    }
 }
