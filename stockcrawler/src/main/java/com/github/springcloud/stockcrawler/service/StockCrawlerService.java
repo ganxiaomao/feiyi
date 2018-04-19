@@ -11,19 +11,52 @@ import java.util.List;
  */
 public interface StockCrawlerService {
 
+    /**
+     * 从证券之星网站，抓取所有的A股上市公司的股票基本信息
+     * @return
+     */
     public ResultVo crawlStockBaseInfo();
 
     public ResultVo crawlBaiduStockDetail();
 
+    /**
+     * 批量保存股票基本信息数据
+     * @param entities
+     * @return
+     */
     public ResultVo stockBaseInfoBatchSave(List<StockBaseInfoEntity> entities);
 
     public ResultVo baiduStockDetailSave(StockDetailDayRecordEntity entity);
 
     public void quartzTest();
 
+    /**
+     * 从理杏仁网站获取指定日期的股票基本面数据
+     * @param stockCode 股票代码
+     * @param date 指定日期，'yyyy-MM-dd'格式
+     * @return
+     */
     public ResultVo crawlDailyStockInfoFromLixingren(String stockCode,String date);
 
     public boolean updateStrockBaseInfo(StockBaseInfoEntity entity);
 
+    /**
+     * 根据stockCode从股票基础信息表获取一条数据
+     * @param stockCode
+     * @return
+     */
     public StockBaseInfoEntity findOneStockBaseInfoByStockCode(String stockCode);
+
+    /**
+     * 根据stockCode在证券之星网站获取股票相关公司的主要信息，比如是否退市、上市时间等
+     * @param stockCodes
+     * @return
+     */
+    public ResultVo crawlStockStarBriefInfo(List<String> stockCodes);
+
+    /**
+     * 获取数据表stock_base_info中存储的所有股票的代码
+     * @return
+     */
+    public List<String> getAllStockCodeFromBaseInfo();
 }

@@ -1,6 +1,7 @@
 package com.github.springcloud.stockcrawler.controller;
 
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,5 +35,10 @@ public class CrawlerController {
     @RequestMapping(value="crawlStockMentalInfo",method = RequestMethod.GET)
     public ResponseEntity<?> crawlStockMentalInfo(@RequestParam(value="stockCode") String stockCode,@RequestParam(value="date") String date){
         return ResponseEntity.ok(stockCrawlerService.crawlDailyStockInfoFromLixingren(stockCode,date));
+    }
+
+    @RequestMapping(value = "crawlStockStarBriefInfo",method =  RequestMethod.GET)
+    public ResponseEntity<?> crawlStockStarBriefInfo(@RequestParam(value="stockCode") String stockCode){
+        return ResponseEntity.ok(stockCrawlerService.crawlStockStarBriefInfo(stockCrawlerService.getAllStockCodeFromBaseInfo()));
     }
 }

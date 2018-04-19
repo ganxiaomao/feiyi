@@ -42,4 +42,10 @@ public class StockBaseInfoEntity {
      */
     @Column(name = "listed_time")
     private Date listedTime;
+
+    /**
+     * 是否退市：1，是；0，否
+     */
+    @Column(name = "delist")
+    private int delist = 0;
 }

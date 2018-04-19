@@ -11,6 +11,7 @@
         <result column="stock_type" property="stockType" jdbcType="INTEGER" />
         <result column="create_time" property="createTime" jdbcType="DATE" />
         <result column="listed_time" property="listedTime" jdbcType="DATE" />
+        <result column="delist" property="delist" jdbcType="INTEGER" />
     </resultMap>
 
     <select id="selectOneByStockCode" resultMap="BaseResultMap" parameterType="java.lang.String">

@@ -9,7 +9,7 @@ import com.geccocrawler.gecco.spider.HtmlBean;
 /**
  * Created by ganzhen on 18/04/2018.
  */
-@Gecco(matchUrl = "http://stock.quote.stockstar.com/corp/brief_{stockCode}.shtml",pipelines = {"stockStarComPipeline","consolePipeline"})
+@Gecco(matchUrl = "http://stock.quote.stockstar.com/corp/brief_{stockCode}.shtml",pipelines = {"stockStarBriefPipeline","consolePipeline"})
 public class StockStarBriefPage implements HtmlBean {
     private static final long serialVersionUID = -1L;
 
@@ -17,7 +17,7 @@ public class StockStarBriefPage implements HtmlBean {
     private String stockCode;//url中的{stockCode}的值
 
     @Text
-    @HtmlField(cssPath = "table.globalTable>tbody>tr:nth-child(1)>td:nth-child(3)")
+    @HtmlField(cssPath = "table.globalTable>tbody>tr:nth-child(4)>td:nth-child(4)")//元素集合下标从1开始，不是0
     private String listedTime;//上市时间
 
 

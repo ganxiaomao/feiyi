@@ -18,4 +18,11 @@
         <result column="date" property="date" jdbcType="DATE" />
     </resultMap>
 
+    <select id="findAllByStockCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM financial_stock_daily_mental_info where stock_code = #{stockCode} ORDER BY date ASC
+    </select>
+
+    <select id="findAllByStockCodeAndDate" parameterType="java.util.Map" resultMap="BaseResultMap">
+        SELECT * FROM financial_stock_daily_mental_info where stock_code = #{stockCode} and CAST(date AS DATE) <![CDATA[<= ]]> #{date} ORDER BY date ASC
+    </select>
 </mapper>

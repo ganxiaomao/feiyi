@@ -141,22 +141,11 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     @Override
     public ResultVo crawlDailyStockInfoFromLixingren(String stockCode, String date) {
         String url = "https://www.lixinger.com/api/open/a/stock/fundamental-info";
-        JSONObject jo = new JSONObject();
-        jo.put("token","9bcbd411-608e-4ad2-8fb7-870ace1652e6");
-        jo.put("date",date);
-        JSONArray ja3 = new JSONArray();
-        ja3.add("pe_ttm");
-        ja3.add("pb");
-        ja3.add("market_value");
-        ja3.add("dividend_r");
-        jo.put("metrics",ja3);
-        JSONArray ja4 = new JSONArray();
-        ja4.add(stockCode);
-        jo.put("stockCodes",ja4);
+        String requestStr = arrangeLixingerStockMentalInfoParam(date);
 
-        logger.info("请求理杏仁股票基本面信息接口，请求参数为："+jo.toJSONString());
+        logger.info("请求理杏仁股票基本面信息接口，请求参数为："+requestStr);
         try{
-            String responseStr = HttpUtils.httpPostBody(url,jo.toJSONString());
+            String responseStr = HttpUtils.httpPostBody(url,requestStr);
             logger.info("理杏仁响应数据为："+responseStr);
             Gson gson = new Gson();
             List<StockDailyMentalInfoEntity> entities = JSONObject.parseArray(responseStr,StockDailyMentalInfoEntity.class);
@@ -197,13 +186,63 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         return null;
     }
 
+    @Override
+    public ResultVo crawlStockStarBriefInfo(List<String> stockCodes) {
+        if(stockCodes != null && !stockCodes.isEmpty()){
+            List<HttpRequest> hgrs = Lists.newArrayList();
+            int count = 0;
+            for(String stockCode : stockCodes){
+                String url = "http://stock.quote.stockstar.com/corp/brief_"+stockCode+".shtml";
+                HttpRequest request = new HttpGetRequest(url);
+                //查看网站的编码，填充在这里
+                request.setCharset("gb2312");
+                hgrs.add(request);
+            }
+            GeccoEngine.create()
+                    .pipelineFactory(springPipelineFactory)
+                    //如果pipeline和htmlbean不在同一个包，classpath就要设置到他们的共同父包
+                    .classpath("com.github.springcloud.stockcrawler")
+                    .start(hgrs)
+                    .thread(3)
+                    .interval(2000)
+                    .loop(false)
+                    .mobile(false)
+                    .start();
+        }
+        return new ResultVo(true,null,"抓取完毕");
+    }
+
+    @Override
+    public List<String> getAllStockCodeFromBaseInfo() {
+        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
+        List<String> stockCodes = Lists.newArrayList();
+        if(entities != null){
+            for(StockBaseInfoEntity entity : entities){
+                stockCodes.add(entity.getStockCode());
+            }
+        }
+        return stockCodes;
+    }
+
+    /**
+     * 获取所有未退市的股票
+     * @return
+     */
     public List<StockBaseInfoEntity> getAllStockBaseInfo(){
-        List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectAll();
+        StockBaseInfoEntity query = new StockBaseInfoEntity();
+        query.setDelist(0);
+        //找到所有未退市的股票
+        List<StockBaseInfoEntity> entities = stockBaseInfoDao.select(query);
         if(entities == null)
             entities = Lists.newArrayList();
         return entities;
     }
 
+    /**
+     * 整合理杏仁股票基本面数据接口所需的参数
+     * @param date
+     * @return
+     */
     public String arrangeLixingerStockMentalInfoParam(String date){
         JSONObject jo = new JSONObject();
         jo.put("token","9bcbd411-608e-4ad2-8fb7-870ace1652e6");
@@ -225,6 +264,5 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         else
             return "";
         return jo.toJSONString();
-
     }
 }

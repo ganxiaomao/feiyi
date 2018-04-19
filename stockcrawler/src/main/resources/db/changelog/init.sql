@@ -5,8 +5,10 @@ CREATE TABLE `financial_stock_base_info` (
   `stock_type` int(11) DEFAULT NULL COMMENT '1,上证；2，深证',
   `create_time` datetime DEFAULT NULL,
   `listed_time` datetime DEFAULT NULL COMMENT '上市时间',
+  `delist` int(11) DEFAULT '0' COMMENT '是否退市：1，是；0，否',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 CREATE TABLE `financial_stock_detail_day_record` (
