@@ -257,7 +257,7 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         StockBaseInfoEntity query = new StockBaseInfoEntity();
         query.setDelist(0);
         //找到所有未退市的股票
-        List<StockBaseInfoEntity> entities = stockBaseInfoDao.select(query);
+        List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectByExample(query);
         if(entities == null)
             entities = Lists.newArrayList();
         return entities;
