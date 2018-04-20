@@ -16,6 +16,7 @@
         <result column="market_value" property="market_value" jdbcType="DECIMAL" />
         <result column="create_time" property="createTime" jdbcType="DATE" />
         <result column="date" property="date" jdbcType="DATE" />
+        <result column="crawled" property="crawled" jdbcType="INTEGER" />
     </resultMap>
 
     <select id="findAllByStockCode" resultMap="BaseResultMap" parameterType="java.lang.String">
@@ -25,4 +26,8 @@
     <select id="findAllByStockCodeAndDate" parameterType="java.util.Map" resultMap="BaseResultMap">
         SELECT * FROM financial_stock_daily_mental_info where stock_code = #{stockCode} and CAST(date AS DATE) <![CDATA[<= ]]> #{date} ORDER BY date ASC
     </select>
+
+    <update id="updateCrawledByStockCode" parameterType="java.util.Map">
+        UPDATE financial_stock_daily_mental_info SET crawled = #{crawled} WHERE stock_code = #{stockCode}
+    </update>
 </mapper>

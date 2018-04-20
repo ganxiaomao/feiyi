@@ -1,11 +1,13 @@
 package com.github.springcloud.basecommon.utils;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.joda.time.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by ganzhen on 25/01/2018.
@@ -187,5 +189,26 @@ public class DateUtils {
             }
         }
         return res;
+    }
+
+    /**
+     * 计算给定时间段的每一天的日期
+     * @param from 起始时间
+     * @param to 结束时间
+     * @param maxYears 从结束时间往前推，获取的最大年份范围，如果超过to-from，则from的值就变成to-maxYears;maxYears＜0，则就计算from-to的范围的每天日期
+     * @return
+     */
+    public static List<Date> getEveryDayFromThen2NowByMaxYears(Date from, Date to, int maxYears){
+        List<Date> dates = Lists.newArrayList();
+        int count = 1;//记录已生成的数量，与maxYears作比较
+        Date tmp = from;//临时值
+        int realYears = differentYearOrMonthOrDayOrHoursOrMinOrSec(from,to,"y");
+        if(maxYears>=0 && realYears>maxYears)//now-then>maxYears，则从now-maxYears开始算
+            tmp = plus(to,0-maxYears,"y");
+        while(tmp.compareTo(to)<1){
+            dates.add(tmp);
+            tmp=plus(tmp,1,"d");
+        }
+        return dates;
     }
 }

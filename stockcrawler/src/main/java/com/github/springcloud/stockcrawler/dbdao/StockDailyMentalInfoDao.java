@@ -4,6 +4,7 @@ import com.github.springcloud.stockcrawler.MyMapper;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ganzhen on 18/04/2018.
@@ -25,5 +26,10 @@ public interface StockDailyMentalInfoDao  extends MyMapper<StockDailyMentalInfoE
      */
     public List<StockDailyMentalInfoEntity> findAllByStockCodeAndDate(String stockCode, String date);
 
-
+    /**
+     * 根据stockCode更新crawled字段
+     * @param params 包含stockCode、crawled
+     * @return
+     */
+    public int updateCrawledByStockCode(Map<String,Object> params);
 }

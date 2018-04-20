@@ -3,15 +3,15 @@ package com.github.springcloud.basecommon.test;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.springcloud.basecommon.httputils.HttpUtils;
+import com.github.springcloud.basecommon.utils.DateUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Created by ganzhen on 07/03/2018.
@@ -53,10 +53,11 @@ public class TestMain {
         jo.put("stockCodes",ja4);
 
 
-        System.out.println(jo.toString());
-        HttpUtils.httpPostBody(url,jo.toString());
+        //System.out.println(jo.toString());
+        //HttpUtils.httpPostBody(url,jo.toString());
         //HttpUtils.httpPost(url,"",params);
         //generateLoanRequestJson();
+        generateEveryDayDate();
     }
 
     public static void generateLoanRequestJson(){
@@ -84,6 +85,17 @@ public class TestMain {
         jo.put("params",params);
 
         System.out.println(jo.toJSONString());
+    }
+
+    public static void generateEveryDayDate(){
+        try {
+            Date from = DateUtils.convertString2Date("2016-01-01","yyyy-MM-dd");
+            Date to = DateUtils.convertString2Date("2018-04-20","yyyy-MM-dd");
+            List<Date> everyDays = DateUtils.getEveryDayFromThen2NowByMaxYears(from,to,1);
+            System.out.println(everyDays.size());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }
 

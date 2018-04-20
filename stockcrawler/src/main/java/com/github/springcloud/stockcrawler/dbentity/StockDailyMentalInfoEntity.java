@@ -76,4 +76,10 @@ public class StockDailyMentalInfoEntity {
      */
     @Column(name = "create_time")
     private Date createTime;
+
+    /**
+     * 是否信息抓取过：0，否；1，是
+     */
+    @Column(name = "crawled")
+    private int crawled = 0;
 }

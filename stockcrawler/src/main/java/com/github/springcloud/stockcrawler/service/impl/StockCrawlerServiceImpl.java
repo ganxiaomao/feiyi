@@ -224,6 +224,31 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         return stockCodes;
     }
 
+    @Override
+    public ResultVo regenerateAllStockMentalDataFromListTime2Now(Date now) {
+        //获取所有未退市的stockBaseInfo的数据
+        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
+        //
+//        if(entities != null){
+//            for(StockBaseInfoEntity entity : entities){
+//                List<StockDailyMentalInfoEntity> dailyMentalInfoEntities = Lists.newArrayList();
+//                Date listedTime = entity.getListedTime();
+//                List<Date> everyDays = DateUtils.getEveryDayFromThen2NowByMaxYears(listedTime,new Date(),10);
+//                for(Date everyDay : everyDays){
+//                    StockDailyMentalInfoEntity dailyMentalInfoEntity = new StockDailyMentalInfoEntity();
+//                    dailyMentalInfoEntity.setId(new UUID().toString());
+//                    dailyMentalInfoEntity.setDate(everyDay);
+//                    dailyMentalInfoEntity.setCrawled(0);
+//                    dailyMentalInfoEntities.add(dailyMentalInfoEntity);
+//                }
+//                //保存
+//                logger.info("重新生成stockCode="+entity.getStockCode()+"的从上市到当前时间的基本面信息数据共"+dailyMentalInfoEntities.size()+"条");
+//                batchInsertStockDailyMentalInfo(dailyMentalInfoEntities);
+//            }
+//        }
+        return new ResultVo(true,null,"重新生成完毕");
+    }
+
     /**
      * 获取所有未退市的股票
      * @return
@@ -264,5 +289,16 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         else
             return "";
         return jo.toJSONString();
+    }
+
+    /**
+     * 批量保存股票日常基本面数据
+     * @param entities
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean batchInsertStockDailyMentalInfo(List<StockDailyMentalInfoEntity> entities){
+        stockDailyMentalInfoDao.insertList(entities);
+        return true;
     }
 }
