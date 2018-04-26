@@ -1,15 +1,18 @@
 package com.github.springcloud.stockcrawler.dbdao;
 
 import com.github.springcloud.stockcrawler.MyMapper;
+import com.github.springcloud.stockcrawler.SuperMapperPlus;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by ganzhen on 18/04/2018.
+ * Created by ganzhen on 18/04/2018.MyMapper
  */
-public interface StockDailyMentalInfoDao  extends MyMapper<StockDailyMentalInfoEntity> {
+public interface StockDailyMentalInfoDao  extends SuperMapperPlus<StockDailyMentalInfoEntity> {
 
     /**
      * 根据stockCode，按照date由早到晚的顺序排列，获取数据
@@ -32,4 +35,6 @@ public interface StockDailyMentalInfoDao  extends MyMapper<StockDailyMentalInfoE
      * @return
      */
     public int updateCrawledByStockCode(Map<String,Object> params);
+
+    public int batchInsertList(List<StockDailyMentalInfoEntity> list);
 }

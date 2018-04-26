@@ -13,7 +13,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableEurekaClient
-@MapperScan("com.github.springcloud.stockcrawler.dbdao")
+//@MapperScan("com.github.springcloud.stockcrawler.dbdao")
 @Configuration
 public class StockcrawlerApplication {
 

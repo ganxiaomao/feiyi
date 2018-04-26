@@ -211,4 +211,26 @@ public class DateUtils {
         }
         return dates;
     }
+
+    /**
+     * 判断给定日期是星期几
+     * @param date
+     * @return 返回结果从1--7，与周一到周日一一对应
+     */
+    public static int dayOfWeek(Date date){
+        if(date != null){
+            DateTime dt = new DateTime(date);
+            return dt.dayOfWeek().get();
+        }
+        return -1;
+    }
+
+    public static void main(String[] args){
+        Date now = new Date();
+        try {
+            dayOfWeek(convertString2Date("2018-04-22","yyyy-MM-dd"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
 }

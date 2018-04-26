@@ -30,4 +30,11 @@
     <update id="updateCrawledByStockCode" parameterType="java.util.Map">
         UPDATE financial_stock_daily_mental_info SET crawled = #{crawled} WHERE stock_code = #{stockCode}
     </update>
+
+    <insert id="batchInsertList" parameterType="java.util.List">
+        INSERT INTO financial_stock_daily_mental_info(id,stock_code,pe_ttm,d_pe_ttm,pb,pb_wo_gw,ps_ttm,dividend_r,market_value,create_time,date,crawled) VALUES
+        <foreach collection="list" item="fsdmi" index="index" separator=",">
+            (#{fsdmi.id},#{fsdmi.stockCode},#{fsdmi.pe_ttm},#{fsdmi.d_pe_ttm},#{fsdmi.pb},#{fsdmi.pb_wo_gw},#{fsdmi.ps_ttm},#{fsdmi.dividend_r},#{fsdmi.market_value},#{fsdmi.createTime},#{fsdmi.date},#{fsdmi.crawled})
+        </foreach>
+    </insert>
 </mapper>

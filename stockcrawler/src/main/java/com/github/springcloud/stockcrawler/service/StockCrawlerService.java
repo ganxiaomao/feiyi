@@ -1,5 +1,6 @@
 package com.github.springcloud.stockcrawler.service;
 
+import com.baomidou.mybatisplus.service.IService;
 import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
@@ -10,7 +11,7 @@ import java.util.List;
 /**
  * Created by ganzhen on 11/02/2018.
  */
-public interface StockCrawlerService {
+public interface StockCrawlerService extends IService<StockBaseInfoEntity>{
 
     /**
      * 从证券之星网站，抓取所有的A股上市公司的股票基本信息

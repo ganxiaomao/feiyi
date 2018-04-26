@@ -2,14 +2,17 @@ package com.github.springcloud.stockcrawler.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.eaio.uuid.UUID;
 import com.geccocrawler.gecco.GeccoEngine;
 import com.geccocrawler.gecco.pipeline.PipelineFactory;
 import com.geccocrawler.gecco.request.HttpGetRequest;
 import com.geccocrawler.gecco.request.HttpRequest;
-import com.github.pagehelper.PageRowBounds;
 import com.github.springcloud.basecommon.httputils.HttpUtils;
 import com.github.springcloud.basecommon.utils.DateUtils;
+import com.github.springcloud.stockcrawler.dbdao.FundingBaseInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockBaseInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDailyMentalInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDetailDayRecordDao;
@@ -21,13 +24,13 @@ import com.github.springcloud.stockcrawler.vo.ResultVo;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -37,20 +40,23 @@ import java.util.List;
  * Created by ganzhen on 11/02/2018.
  */
 @Service("stockCrawlerServiceImpl")
-public class StockCrawlerServiceImpl implements StockCrawlerService{
+public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, StockBaseInfoEntity> implements StockCrawlerService{
     Logger logger = LoggerFactory.getLogger(StockCrawlerServiceImpl.class);
 
-    @Autowired
+    @Resource
     private StockBaseInfoDao stockBaseInfoDao;
 
     @Autowired
     private StockDetailDayRecordDao stockDetailDayRecordDao;
 
-    @Autowired
+    @Resource
     private StockDailyMentalInfoDao stockDailyMentalInfoDao;
 
     @Resource(name="springPipelineFactory")
     private PipelineFactory springPipelineFactory;
+
+    @Autowired
+    private FundingBaseInfoDao fundingBaseInfoDao;
 
 
     @Override
@@ -74,7 +80,7 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     @Override
     public ResultVo crawlBaiduStockDetail() {
         //从数据表里找数据
-        List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectAll();
+        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
         //组织成url列表
         int size = entities.size();
         String[] urls = new String[size];
@@ -157,6 +163,7 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
                     entity.setCreateTime(createTime);
                     //理杏仁返回的是格林威治时间，gson强转后，时间会比实际时间大了8个小时，所以要减去8小时转换为本地时间
                     entity.setDate(DateUtils.plus(entity.getDate(),-8,"hour"));
+                    entity.setCrawled(1);//已抓取状态设置为1
                     stockDailyMentalInfoDao.insert(entity);
                 }
             }
@@ -172,7 +179,7 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean updateStrockBaseInfo(StockBaseInfoEntity entity) {
         if(entity != null){
-            stockBaseInfoDao.updateByPrimaryKey(entity);
+            stockBaseInfoDao.updateById(entity);//.updateByPrimaryKey(entity);
             return true;
         }
         return false;
@@ -228,24 +235,26 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
     public ResultVo regenerateAllStockMentalDataFromListTime2Now(Date now) {
         //获取所有未退市的stockBaseInfo的数据
         List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
-        //
-//        if(entities != null){
-//            for(StockBaseInfoEntity entity : entities){
-//                List<StockDailyMentalInfoEntity> dailyMentalInfoEntities = Lists.newArrayList();
-//                Date listedTime = entity.getListedTime();
-//                List<Date> everyDays = DateUtils.getEveryDayFromThen2NowByMaxYears(listedTime,new Date(),10);
-//                for(Date everyDay : everyDays){
-//                    StockDailyMentalInfoEntity dailyMentalInfoEntity = new StockDailyMentalInfoEntity();
-//                    dailyMentalInfoEntity.setId(new UUID().toString());
-//                    dailyMentalInfoEntity.setDate(everyDay);
-//                    dailyMentalInfoEntity.setCrawled(0);
-//                    dailyMentalInfoEntities.add(dailyMentalInfoEntity);
-//                }
-//                //保存
-//                logger.info("重新生成stockCode="+entity.getStockCode()+"的从上市到当前时间的基本面信息数据共"+dailyMentalInfoEntities.size()+"条");
-//                batchInsertStockDailyMentalInfo(dailyMentalInfoEntities);
-//            }
-//        }
+
+        if(entities != null){
+            for(StockBaseInfoEntity entity : entities){
+                List<StockDailyMentalInfoEntity> dailyMentalInfoEntities = Lists.newArrayList();
+                Date listedTime = entity.getListedTime();
+                List<Date> everyDays = DateUtils.getEveryDayFromThen2NowByMaxYears(listedTime,new Date(),10);
+                for(Date everyDay : everyDays){
+                    if(DateUtils.dayOfWeek(everyDay)<6){//不是周末，股票信息才会有数据
+                        StockDailyMentalInfoEntity dailyMentalInfoEntity = new StockDailyMentalInfoEntity();
+                        dailyMentalInfoEntity.setId(new UUID().toString());
+                        dailyMentalInfoEntity.setDate(everyDay);
+                        dailyMentalInfoEntity.setCrawled(0);
+                        dailyMentalInfoEntities.add(dailyMentalInfoEntity);
+                    }
+                }
+                //保存
+                logger.info("重新生成stockCode="+entity.getStockCode()+"的从上市到当前时间的基本面信息数据共"+dailyMentalInfoEntities.size()+"条");
+                batchInsertStockDailyMentalInfo(dailyMentalInfoEntities);
+            }
+        }
         return new ResultVo(true,null,"重新生成完毕");
     }
 
@@ -254,10 +263,14 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
      * @return
      */
     public List<StockBaseInfoEntity> getAllStockBaseInfo(){
-        StockBaseInfoEntity query = new StockBaseInfoEntity();
-        query.setDelist(0);
         //找到所有未退市的股票
-        List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectByExample(query);
+//        Example example = new Example(StockBaseInfoEntity.class);
+//        Example.Criteria criteria = example.createCriteria();
+//        criteria.andCondition("delist=",0);
+        Wrapper wrapper = new EntityWrapper();
+        //wrapper.eq("delist",0);
+        wrapper.where("delist={0}",0).last("LIMIT 1000");
+        List<StockBaseInfoEntity> entities = baseMapper.selectList(wrapper);//.selectByExample(example);
         if(entities == null)
             entities = Lists.newArrayList();
         return entities;
@@ -278,16 +291,16 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
         ja3.add("market_value");
         ja3.add("dividend_r");
         jo.put("metrics",ja3);
-        JSONArray ja4 = new JSONArray();
-        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
-        if(!entities.isEmpty()){
-            for(StockBaseInfoEntity entity : entities){
-                ja4.add(entity.getStockCode());
-            }
-            jo.put("stockCodes",ja4);
-        }
-        else
-            return "";
+//        JSONArray ja4 = new JSONArray();
+//        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
+//        if(!entities.isEmpty()){
+//            for(StockBaseInfoEntity entity : entities){
+//                ja4.add(entity.getStockCode());
+//            }
+//            jo.put("stockCodes",ja4);
+//        }
+//        else
+//            return "";
         return jo.toJSONString();
     }
 
@@ -298,7 +311,13 @@ public class StockCrawlerServiceImpl implements StockCrawlerService{
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean batchInsertStockDailyMentalInfo(List<StockDailyMentalInfoEntity> entities){
-        stockDailyMentalInfoDao.insertList(entities);
+//        if(entities != null){
+//            for(StockDailyMentalInfoEntity entity : entities){
+//                stockDailyMentalInfoDao.insert(entity);
+//            }
+//        }
+        stockDailyMentalInfoDao.batchInsertList(entities);//.insertList(entities);
+        //StockBaseInfoEntity entity = stockBaseInfoDao.selectOneByStockCode("000625");//.findAllByStockCode("000625");
         return true;
     }
 }

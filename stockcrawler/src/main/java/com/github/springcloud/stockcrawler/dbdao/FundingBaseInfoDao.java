@@ -1,6 +1,7 @@
 package com.github.springcloud.stockcrawler.dbdao;
 
 import com.github.springcloud.stockcrawler.MyMapper;
+import com.github.springcloud.stockcrawler.SuperMapperPlus;
 import com.github.springcloud.stockcrawler.dbentity.FundingBaseInfoEntity;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
  * 基金基本信息dao
  * Created by ganzhen on 08/03/2018.
  */
-public interface FundingBaseInfoDao extends MyMapper<FundingBaseInfoEntity> {
+public interface FundingBaseInfoDao extends SuperMapperPlus<FundingBaseInfoEntity> {
 
     /**
      * 根据基金code查找基金

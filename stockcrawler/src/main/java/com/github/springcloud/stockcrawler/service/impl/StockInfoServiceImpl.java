@@ -23,7 +23,7 @@ public class StockInfoServiceImpl implements StockInfoService {
     @Override
     public PageInfo<StockDetailDayRecordEntity> queryAllStockDetailDayRecordPage(Integer pageNo, Integer pageSize) {
         PageHelper.startPage(pageNo, pageSize);
-        List<StockDetailDayRecordEntity> list = stockDetailDayRecordDao.selectAll();
+        List<StockDetailDayRecordEntity> list = null;//stockDetailDayRecordDao.selectAll();
 
         return new PageInfo<>(list);//这里就会根据配置文件中的"params: count=countSql"，来自动获取总个数
     }
