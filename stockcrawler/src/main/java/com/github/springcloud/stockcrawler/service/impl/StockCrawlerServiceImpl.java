@@ -12,11 +12,13 @@ import com.geccocrawler.gecco.request.HttpGetRequest;
 import com.geccocrawler.gecco.request.HttpRequest;
 import com.github.springcloud.basecommon.httputils.HttpUtils;
 import com.github.springcloud.basecommon.utils.DateUtils;
+import com.github.springcloud.stockcrawler.constant.StockDailyConstant;
 import com.github.springcloud.stockcrawler.dbdao.FundingBaseInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockBaseInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDailyMentalInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDetailDayRecordDao;
 import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
+import com.github.springcloud.stockcrawler.dbentity.StockDailyCrawlTaskEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
@@ -239,21 +241,22 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
 
         if(entities != null){
             for(StockBaseInfoEntity entity : entities){
-                List<StockDailyMentalInfoEntity> dailyMentalInfoEntities = Lists.newArrayList();
+                List<StockDailyCrawlTaskEntity> stockDailyCrawlTaskEntities = Lists.newArrayList();
                 Date listedTime = entity.getListedTime();
                 List<Date> everyDays = DateUtils.getEveryDayFromThen2NowByMaxYears(listedTime,new Date(),10);
                 for(Date everyDay : everyDays){
                     if(DateUtils.dayOfWeek(everyDay)<6){//不是周末，股票信息才会有数据
-                        StockDailyMentalInfoEntity dailyMentalInfoEntity = new StockDailyMentalInfoEntity();
-                        dailyMentalInfoEntity.setId(new UUID().toString());
-                        dailyMentalInfoEntity.setCreateTime(everyDay);
-                        dailyMentalInfoEntity.setCrawled(0);
-                        dailyMentalInfoEntities.add(dailyMentalInfoEntity);
+                        StockDailyCrawlTaskEntity stockDailyCrawlTaskEntity = new StockDailyCrawlTaskEntity();
+                        stockDailyCrawlTaskEntity.setId(new UUID().toString());
+                        stockDailyCrawlTaskEntity.setCrawlDate(everyDay);
+                        stockDailyCrawlTaskEntity.setTaskStatus(StockDailyConstant.stock_daily_crawl_task_status_undo);
+                        stockDailyCrawlTaskEntity.setTaskType(StockDailyConstant.stock_daily_crawl_task_type_mental);
+                        stockDailyCrawlTaskEntities.add(stockDailyCrawlTaskEntity);
                     }
                 }
                 //保存
-                logger.info("重新生成stockCode="+entity.getStockCode()+"的从上市到当前时间的基本面信息数据共"+dailyMentalInfoEntities.size()+"条");
-                batchInsertStockDailyMentalInfo(dailyMentalInfoEntities);
+                logger.info("重新生成stockCode="+entity.getStockCode()+"的从上市到当前时间的基本面信息抓取任务共"+stockDailyCrawlTaskEntities.size()+"条");
+                stockMentalInfoServiceImpl.batchInsertStockDailyCrawlTask(stockDailyCrawlTaskEntities);
             }
         }
         return new ResultVo(true,null,"重新生成完毕");

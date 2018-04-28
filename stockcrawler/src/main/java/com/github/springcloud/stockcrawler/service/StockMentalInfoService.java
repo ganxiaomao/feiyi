@@ -1,6 +1,7 @@
 package com.github.springcloud.stockcrawler.service;
 
 import com.baomidou.mybatisplus.service.IService;
+import com.github.springcloud.stockcrawler.dbentity.StockDailyCrawlTaskEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
 
@@ -40,4 +41,11 @@ public interface StockMentalInfoService extends IService<StockDailyMentalInfoEnt
      * @return
      */
     public ResultVo createStockDailyCrawlTask(Date date);
+
+    /**
+     * 批量保存股票日常信息抓取任务
+     * @param entities
+     * @return
+     */
+    public boolean batchInsertStockDailyCrawlTask(List<StockDailyCrawlTaskEntity> entities);
 }

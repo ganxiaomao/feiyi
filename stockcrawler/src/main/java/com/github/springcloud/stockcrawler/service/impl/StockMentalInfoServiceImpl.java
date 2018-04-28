@@ -8,7 +8,9 @@ import com.eaio.uuid.UUID;
 import com.github.springcloud.basecommon.httputils.HttpUtils;
 import com.github.springcloud.basecommon.utils.DateUtils;
 import com.github.springcloud.stockcrawler.common.LixingerUtils;
+import com.github.springcloud.stockcrawler.dbdao.StockDailyCrawlTaskDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDailyMentalInfoDao;
+import com.github.springcloud.stockcrawler.dbentity.StockDailyCrawlTaskEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +30,9 @@ import java.util.List;
 @Service("stockMentalInfoServiceImpl")
 public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfoDao,StockDailyMentalInfoEntity> implements StockMentalInfoService {
     Logger logger = LoggerFactory.getLogger(StockMentalInfoServiceImpl.class);
+
+    @Resource
+    private StockDailyCrawlTaskDao stockDailyCrawlTaskDao;
 
     @Override
     public List<StockDailyMentalInfoEntity> getDatasByDate(Date date) {
@@ -103,5 +109,11 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
     @Override
     public ResultVo createStockDailyCrawlTask(Date date) {
         return null;
+    }
+
+    @Override
+    public boolean batchInsertStockDailyCrawlTask(List<StockDailyCrawlTaskEntity> entities) {
+        stockDailyCrawlTaskDao.batchInsertList(entities);
+        return false;
     }
 }
