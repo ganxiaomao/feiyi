@@ -20,6 +20,7 @@ import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDetailDayRecordEntity;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
+import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -57,6 +58,9 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
 
     @Autowired
     private FundingBaseInfoDao fundingBaseInfoDao;
+
+    @Autowired
+    private StockMentalInfoService stockMentalInfoServiceImpl;
 
 
     @Override
@@ -146,33 +150,30 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
 
     @Override
     public ResultVo crawlDailyStockInfoFromLixingren(String stockCode, String date) {
-        String url = "https://www.lixinger.com/api/open/a/stock/fundamental-info";
+        boolean success = false;
+        String msg = "每日股票基本面信息获取失败";
         String requestStr = arrangeLixingerStockMentalInfoParam(date);
 
-        logger.info("请求理杏仁股票基本面信息接口，请求参数为："+requestStr);
+        List<StockDailyMentalInfoEntity> entities = stockMentalInfoServiceImpl.fetchStockMentalInfoFromLixingren(requestStr);
         try{
-            String responseStr = HttpUtils.httpPostBody(url,requestStr);
-            logger.info("理杏仁响应数据为："+responseStr);
-            Gson gson = new Gson();
-            List<StockDailyMentalInfoEntity> entities = JSONObject.parseArray(responseStr,StockDailyMentalInfoEntity.class);
-            if(entities != null){
-                Date createTime = new Date();
-                logger.info("接收的数据为："+gson.toJson(entities));
-                for(StockDailyMentalInfoEntity entity:entities){
-                    entity.setId(new UUID().toString());
-                    entity.setCreateTime(createTime);
-                    //理杏仁返回的是格林威治时间，gson强转后，时间会比实际时间大了8个小时，所以要减去8小时转换为本地时间
-                    entity.setDate(DateUtils.plus(entity.getDate(),-8,"hour"));
-                    entity.setCrawled(1);//已抓取状态设置为1
-                    stockDailyMentalInfoDao.insert(entity);
-                }
-            }
+            //entities不为null，则批量插入数据表
+            stockDailyMentalInfoDao.batchInsertList(entities);
+            success = true;
+            msg = "每日股票基本面信息获取成功";
         }
         catch(Exception e){
-            logger.info("error:",e);
+            logger.info("error",e);
+            msg = e.getMessage();
         }
 
-        return new ResultVo(true,null,"获取成功");
+
+        return new ResultVo(success,null,msg);
+    }
+
+
+    public boolean batchUpdateStockDailyMentalInfo(List<StockDailyMentalInfoEntity> entities){
+
+        return true;
     }
 
     @Override
@@ -245,7 +246,7 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
                     if(DateUtils.dayOfWeek(everyDay)<6){//不是周末，股票信息才会有数据
                         StockDailyMentalInfoEntity dailyMentalInfoEntity = new StockDailyMentalInfoEntity();
                         dailyMentalInfoEntity.setId(new UUID().toString());
-                        dailyMentalInfoEntity.setDate(everyDay);
+                        dailyMentalInfoEntity.setCreateTime(everyDay);
                         dailyMentalInfoEntity.setCrawled(0);
                         dailyMentalInfoEntities.add(dailyMentalInfoEntity);
                     }
@@ -256,6 +257,47 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
             }
         }
         return new ResultVo(true,null,"重新生成完毕");
+    }
+
+    @Override
+    public ResultVo createDailyStockMentalInfoCrawlTask(Date date) {
+        logger.info("开始生成每日股票基本面数据抓取的任务");
+        List<StockDailyMentalInfoEntity> dailyMentalInfoEntities = Lists.newArrayList();
+        //获取所有未退市的stockBaseInfo的数据
+        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
+        //按日期查询是否已存在的生成的任务
+        List<StockDailyMentalInfoEntity> exitedDailyEntities = stockMentalInfoServiceImpl.getDatasByDate(date);
+        try{
+            //判断是否为周末
+            if(DateUtils.dayOfWeek(date) < 6){
+                for(StockBaseInfoEntity entity : entities){
+                    StockDailyMentalInfoEntity dailyMentalInfoEntity = new StockDailyMentalInfoEntity();
+                    dailyMentalInfoEntity.setId(new UUID().toString());
+                    dailyMentalInfoEntity.setCreateTime(date);
+                    dailyMentalInfoEntity.setCrawled(0);
+
+                    //判断是否已存在
+                    if(exitedDailyEntities != null && !exitedDailyEntities.isEmpty()){
+                        if(exitedDailyEntities.contains(dailyMentalInfoEntity))
+                            continue;
+                    }
+                    //
+                    dailyMentalInfoEntities.add(dailyMentalInfoEntity);
+                }
+            }
+            //批量保存
+            if(!dailyMentalInfoEntities.isEmpty()){
+                logger.info("每日股票基本面数据抓取的任务生成"+dailyMentalInfoEntities.size()+"条数据");
+                batchInsertStockDailyMentalInfo(dailyMentalInfoEntities);
+            }
+        }
+        catch(Exception e){
+            logger.info("error",e);
+        }
+
+
+        logger.info("结束生成每日股票基本面数据抓取的任务");
+        return null;
     }
 
     /**
@@ -269,7 +311,7 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
 //        criteria.andCondition("delist=",0);
         Wrapper wrapper = new EntityWrapper();
         //wrapper.eq("delist",0);
-        wrapper.where("delist={0}",0).last("LIMIT 1000");
+        wrapper.where("delist={0}",0).last("LIMIT 10");
         List<StockBaseInfoEntity> entities = baseMapper.selectList(wrapper);//.selectByExample(example);
         if(entities == null)
             entities = Lists.newArrayList();
@@ -291,16 +333,17 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
         ja3.add("market_value");
         ja3.add("dividend_r");
         jo.put("metrics",ja3);
-//        JSONArray ja4 = new JSONArray();
-//        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
-//        if(!entities.isEmpty()){
-//            for(StockBaseInfoEntity entity : entities){
-//                ja4.add(entity.getStockCode());
-//            }
-//            jo.put("stockCodes",ja4);
-//        }
-//        else
-//            return "";
+        //不添加stockCodes，则会返回所有未退市的股票基本面数据
+        JSONArray ja4 = new JSONArray();
+        List<StockBaseInfoEntity> entities = getAllStockBaseInfo();
+        if(!entities.isEmpty()){
+            for(StockBaseInfoEntity entity : entities){
+                ja4.add(entity.getStockCode());
+            }
+            jo.put("stockCodes",ja4);
+        }
+        else
+            return "";
         return jo.toJSONString();
     }
 

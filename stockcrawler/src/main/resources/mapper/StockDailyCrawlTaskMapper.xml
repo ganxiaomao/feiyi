@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.springcloud.stockcrawler.dbdao.StockDailyCrawlTaskDao" >
+    <resultMap id="BaseResultMap" type="com.github.springcloud.stockcrawler.dbentity.StockDailyCrawlTaskEntity" >
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="crawl_date" property="crawlDate" jdbcType="DATE" />
+        <result column="task_type" property="taskType" jdbcType="INTEGER" />
+        <result column="task_status" property="taskStatus" jdbcType="INTEGER" />
+    </resultMap>
+
+    <update id="updateTaskStatusById" parameterType="java.util.Map">
+        UPDATE financial_stock_daily_crawl_task SET task_status = #{taskStatus} WHERE id = #{id}
+    </update>
+
+    <insert id="batchInsertList" parameterType="java.util.List">
+        INSERT INTO financial_stock_daily_crawl_task(id,crawl_date,task_type,task_status) VALUES
+        <foreach collection="list" item="fsdct" index="index" separator=",">
+            (#{fsdct.id},#{fsdct.crawlDate},#{fsdct.taskType},#{fsdct.taskStatus})
+        </foreach>
+    </insert>
+
+</mapper>

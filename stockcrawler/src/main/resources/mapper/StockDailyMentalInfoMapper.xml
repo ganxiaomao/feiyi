@@ -6,7 +6,7 @@
           WARNING - @mbg.generated
         -->
         <id column="id" property="id" jdbcType="VARCHAR" />
-        <id column="stock_code" property="stockCode" jdbcType="VARCHAR" />
+        <result column="stock_code" property="stockCode" jdbcType="VARCHAR" />
         <result column="pe_ttm" property="pe_ttm" jdbcType="DECIMAL" />
         <result column="d_pe_ttm" property="d_pe_ttm" jdbcType="DECIMAL" />
         <result column="pb" property="pb" jdbcType="DECIMAL" />
@@ -37,4 +37,5 @@
             (#{fsdmi.id},#{fsdmi.stockCode},#{fsdmi.pe_ttm},#{fsdmi.d_pe_ttm},#{fsdmi.pb},#{fsdmi.pb_wo_gw},#{fsdmi.ps_ttm},#{fsdmi.dividend_r},#{fsdmi.market_value},#{fsdmi.createTime},#{fsdmi.date},#{fsdmi.crawled})
         </foreach>
     </insert>
+
 </mapper>

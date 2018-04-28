@@ -107,4 +107,18 @@ public class StockDailyMentalInfoEntity extends Model<StockDailyMentalInfoEntity
     protected Serializable pkVal() {
         return this.id;
     }
+
+    /**
+     * 重写equals函数，为了便于使用List中的contains函数
+     * @param o
+     * @return
+     */
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof StockDailyMentalInfoEntity){
+            StockDailyMentalInfoEntity tmp = (StockDailyMentalInfoEntity) o;
+            return this.stockCode.equals(tmp.getStockCode());
+        }
+        return super.equals(o);
+    }
 }

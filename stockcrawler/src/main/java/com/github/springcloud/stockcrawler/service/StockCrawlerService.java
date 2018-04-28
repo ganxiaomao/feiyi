@@ -62,5 +62,17 @@ public interface StockCrawlerService extends IService<StockBaseInfoEntity>{
      */
     public List<String> getAllStockCodeFromBaseInfo();
 
+    /**
+     * 重新生成历史所有的股票基本面数据抓取的任务（从股票发行日，到指定时间每天（非周末）的抓取任务）
+     * @param now
+     * @return
+     */
     public ResultVo regenerateAllStockMentalDataFromListTime2Now(Date now);
+
+    /**
+     * 生成指定时间的所有未退市股票的基本面数据抓取任务
+     * @param date
+     * @return
+     */
+    public ResultVo createDailyStockMentalInfoCrawlTask(Date date);
 }

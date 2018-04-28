@@ -56,4 +56,12 @@ CREATE TABLE `financial_stock_daily_mental_info` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `financial`.`financial_stock_daily_crawl_task` (
+  `id` VARCHAR(64) NOT NULL,
+  `crawl_date` DATETIME NULL COMMENT '抓取时间',
+  `task_type` INT NULL COMMENT '抓取类型：1，股票基本面信息',
+  `task_status` INT NULL COMMENT '任务状态：0，未执行；1，执行成功；-1，执行失败',
+  PRIMARY KEY (`id`));
+
+
 
