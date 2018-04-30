@@ -31,4 +31,11 @@
             (#{fsbi.id},#{fsbi.stockCode},#{fsbi.stockName},#{fsbi.stockType},#{fsbi.createTime},#{fsbi.listedTime},#{fsbi.delist})
         </foreach>
     </insert>
+
+    <update id="batchUpdateDelistByStockCodes" parameterType="java.util.Map">
+        UPDATE financial_stock_base_info SET delist = #{delist} WHERE stock_code IN 
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
 </mapper>

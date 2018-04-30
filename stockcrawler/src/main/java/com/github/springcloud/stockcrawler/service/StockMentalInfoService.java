@@ -48,4 +48,7 @@ public interface StockMentalInfoService extends IService<StockDailyMentalInfoEnt
      * @return
      */
     public boolean batchInsertStockDailyCrawlTask(List<StockDailyCrawlTaskEntity> entities);
+
+    public ResultVo exeCrawlStockMentalInfoTask();
+
 }

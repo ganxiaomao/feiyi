@@ -22,4 +22,11 @@
         </foreach>
     </insert>
 
+    <update id="updateTaskStatusByIds" parameterType="java.util.Map">
+        UPDATE financial_stock_daily_crawl_task SET task_status = #{taskStatus} WHERE id IN
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
 </mapper>

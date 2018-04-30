@@ -24,4 +24,6 @@ public interface StockDailyCrawlTaskDao extends SuperMapperPlus<StockDailyCrawlT
      * @return
      */
     public int batchInsertList(List<StockDailyCrawlTaskEntity> entities);
+
+    public int updateTaskStatusByIds(Map<String,Object> params);
 }

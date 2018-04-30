@@ -201,6 +201,11 @@ public class DateUtils {
     public static List<Date> getEveryDayFromThen2NowByMaxYears(Date from, Date to, int maxYears){
         List<Date> dates = Lists.newArrayList();
         int count = 1;//记录已生成的数量，与maxYears作比较
+        if(from == null)
+            from = plus(to,0-maxYears,"y");
+        else if(to == null)
+            to = plus(from,maxYears,"y");
+
         Date tmp = from;//临时值
         int realYears = differentYearOrMonthOrDayOrHoursOrMinOrSec(from,to,"y");
         if(maxYears>=0 && realYears>maxYears)//now-then>maxYears，则从now-maxYears开始算

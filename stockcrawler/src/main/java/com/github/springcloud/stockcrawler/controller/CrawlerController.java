@@ -2,6 +2,8 @@ package com.github.springcloud.stockcrawler.controller;
 
 import com.github.springcloud.basecommon.utils.DateUtils;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
+import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
+import com.github.springcloud.stockcrawler.vo.ResultVo;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,9 @@ public class CrawlerController {
 
     @Autowired
     private StockCrawlerService stockCrawlerService;
+
+    @Autowired
+    private StockMentalInfoService stockMentalInfoServiceImpl;
 
     @RequestMapping(value="crawlStockStar",method= RequestMethod.GET)
     public ResponseEntity<?> crawlStockStar(){
@@ -55,5 +60,21 @@ public class CrawlerController {
             e.printStackTrace();
         }
         return ResponseEntity.ok(true);
+    }
+
+    /**
+     * 修正stockbaseinfo的数据，有些股票新增，有些退市，需要定期修正一i啊
+     * @return
+     */
+    @RequestMapping(value = "fixAllStockBaseInfo", method = RequestMethod.GET)
+    public ResponseEntity<?> fixAllStockBaseInfo(){
+        ResultVo rv = stockCrawlerService.fixAllStockBaseInfo();
+        return ResponseEntity.ok(rv);
+    }
+
+    @RequestMapping(value = "exeCrawlStockMentalInfoTask",method = RequestMethod.GET)
+    public ResponseEntity exeCrawlStockMentalInfoTask(){
+        ResultVo rv = stockMentalInfoServiceImpl.exeCrawlStockMentalInfoTask();
+        return ResponseEntity.ok(rv);
     }
 }

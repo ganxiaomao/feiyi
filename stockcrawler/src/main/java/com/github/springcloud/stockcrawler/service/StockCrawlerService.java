@@ -75,4 +75,10 @@ public interface StockCrawlerService extends IService<StockBaseInfoEntity>{
      * @return
      */
     public ResultVo createDailyStockMentalInfoCrawlTask(Date date);
+
+    /**
+     * 纠正现有的股票基本信息，仍然存在的则保存，退市的则标记退市
+     * @return
+     */
+    public ResultVo fixAllStockBaseInfo();
 }
