@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.eaio.uuid.UUID;
 import com.github.springcloud.basecommon.httputils.HttpUtils;
 import com.github.springcloud.basecommon.utils.DateUtils;
+import com.github.springcloud.stockcrawler.common.BaseClassConvertUtils;
 import com.github.springcloud.stockcrawler.common.LixingerUtils;
 import com.github.springcloud.stockcrawler.common.MathUtils;
 import com.github.springcloud.stockcrawler.constant.StockDailyConstant;
@@ -209,17 +210,21 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
 
     @Override
     public ResultVo computeDailyStockDegree() {
-        List<StockDailyMentalInfoEntity> l =baseMapper.findAllByStockCode("000001");//.selectById("00093dc0-4bf0-11e8-b348-9a5fd3589e5b");
         //1 从stockbaseinfo表获取所有未退市的stockcode
         List<String> stockCodes = stockCrawlerServiceImpl.getAllStockCodeFromBaseInfo();
         //2 遍历每个stockCode，根据stockcode从stockmentalinfo表根据date的正序获取所有数据
+        StockDailyMentalInfoEntity tmp = baseMapper.selectById("6c38bc0c-4bc8-11e8-8a70-9a5fd3589e5b");
         for(String stockCode : stockCodes){
             logger.info("开始计算stockCode="+stockCode+"股票温度");
             List<StockDailyMentalInfoEntity> entities = findDatasByStocCodeOrderByDateAsc(stockCode);
             //循环每个stockDailyMentalInfo信息，degreed=0的，计算其温度
             List<StockDailyMentalInfoEntity> degreedEntities = computeStockDailyMentalInfoDatasDegree(entities);
-            if(!degreedEntities.isEmpty())//批量更新
+            if(!degreedEntities.isEmpty()){
+                //批量更新
                 batchUpdateStockDailyMentalInfo(degreedEntities);
+                logger.info("总共更新股票温度"+degreedEntities.size()+"条数据");
+            }
+
             logger.info("完成计算stockCode="+stockCode+"股票温度，更新数据"+degreedEntities.size()+"条");
         }
         return new ResultVo(true,null,"计算股票温度任务执行完毕");
@@ -278,34 +283,70 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
      * @return 返回的结果是计算前没有，但计算后有了温度的数据，也就是它可能≤参数entities
      */
     public List<StockDailyMentalInfoEntity> computeStockDailyMentalInfoDatasDegree(List<StockDailyMentalInfoEntity> entities){
+        logger.info("计算股票温度的程序开始时间为："+System.currentTimeMillis());
         List<StockDailyMentalInfoEntity> ress = Lists.newArrayList();
-        double[] pb_array = new double[entities.size()];
-        double[] pe_array = new double[entities.size()];
+        //double[] pb_array = new double[entities.size()];
+        //double[] pe_array = new double[entities.size()];
+        List<Double> pbList = Lists.newArrayList();
+        List<Double> peList = Lists.newArrayList();
         int index = 0;
         List<DegreeComputeTempClass> dcts = Lists.newArrayList();
         //整理出全部的pb、pe以及待计算股票温度的数据
         for(StockDailyMentalInfoEntity entity : entities){
-            pb_array[index] = entity.getPe_ttm()==null?0d:entity.getPe_ttm().doubleValue();
-            pe_array[index] = entity.getPb()==null?0d:entity.getPb().doubleValue();
+            if(entity.getPeTtm() == null || entity.getPb()==null){
+                //不参与计算，但是状态改变
+                if(entity.getDegreed()==0){
+                    entity.setDegreed(1);
+                    ress.add(entity);
+                }
+
+                continue;
+            }
+            pbList.add(entity.getPb()==null?0d:entity.getPb().doubleValue());
+            peList.add(entity.getPeTtm()==null?0d:entity.getPeTtm().doubleValue());
+            //pe_array[index] = entity.getPeTtm()==null?0d:entity.getPeTtm().doubleValue();
+            //pb_array[index] = entity.getPb()==null?0d:entity.getPb().doubleValue();
             index ++;
-            if(entity.getDegreed() == 0){
-                DegreeComputeTempClass dct = new DegreeComputeTempClass();
-                dct.length = index;
-                dct.stockDailyMentalInfoEntity = entity;
-                dcts.add(dct);
+            if(entity.getDegreed() == 0 && index <= 1){
+                //第一个数据不计算温度，但要改变状态
+                entity.setDegreed(1);
+                ress.add(entity);
+            }
+            if(entity.getDegreed() == 0 && index > 1){
+                try{
+                    double peTtmDegree = MathUtils.pbOrPeDegree(BaseClassConvertUtils.convertDoubleList2Array(peList),entity.getPeTtm().doubleValue(),0,index);
+                    double pbDegree = MathUtils.pbOrPeDegree(BaseClassConvertUtils.convertDoubleList2Array(pbList),entity.getPb().doubleValue(),0,index);
+                    double stockDegree = (peTtmDegree+pbDegree)/2;
+                    entity.setDegreed(1);
+                    entity.setPeTtmDegree(new BigDecimal(peTtmDegree));
+                    entity.setPbDegree(new BigDecimal(pbDegree));
+                    entity.setStockDegree(new BigDecimal(stockDegree));
+                    ress.add(entity);
+                }
+                catch (Exception e){
+                    ress.clear();
+                    logger.info("error",e);
+                    break;
+                }
+
+//                DegreeComputeTempClass dct = new DegreeComputeTempClass();
+//                dct.length = index;
+//                dct.stockDailyMentalInfoEntity = entity;
+//                dcts.add(dct);
             }
         }
         //开始计算
-        for(DegreeComputeTempClass dct : dcts){
-            double peTtmDegree = MathUtils.pbOrPeDegree(pe_array,dct.stockDailyMentalInfoEntity.getPe_ttm().doubleValue(),0,dct.length);
-            double pbDegree = MathUtils.pbOrPeDegree(pe_array,dct.stockDailyMentalInfoEntity.getPb().doubleValue(),0,dct.length);
-            double stockDegree = (peTtmDegree+pbDegree)/2;
-            dct.stockDailyMentalInfoEntity.setDegreed(1);
-            dct.stockDailyMentalInfoEntity.setPeTtmDegree(new BigDecimal(peTtmDegree));
-            dct.stockDailyMentalInfoEntity.setPbDegree(new BigDecimal(pbDegree));
-            dct.stockDailyMentalInfoEntity.setStockDegree(new BigDecimal(stockDegree));
-            ress.add(dct.stockDailyMentalInfoEntity);
-        }
+//        for(DegreeComputeTempClass dct : dcts){
+//            double peTtmDegree = MathUtils.pbOrPeDegree(pe_array,dct.stockDailyMentalInfoEntity.getPeTtm().doubleValue(),0,dct.length);
+//            double pbDegree = MathUtils.pbOrPeDegree(pe_array,dct.stockDailyMentalInfoEntity.getPb().doubleValue(),0,dct.length);
+//            double stockDegree = (peTtmDegree+pbDegree)/2;
+//            dct.stockDailyMentalInfoEntity.setDegreed(1);
+//            dct.stockDailyMentalInfoEntity.setPeTtmDegree(new BigDecimal(peTtmDegree));
+//            dct.stockDailyMentalInfoEntity.setPbDegree(new BigDecimal(pbDegree));
+//            dct.stockDailyMentalInfoEntity.setStockDegree(new BigDecimal(stockDegree));
+//            ress.add(dct.stockDailyMentalInfoEntity);
+//        }
+        logger.info("计算股票温度的程序结束时间为："+System.currentTimeMillis());
         return ress;
     }
 

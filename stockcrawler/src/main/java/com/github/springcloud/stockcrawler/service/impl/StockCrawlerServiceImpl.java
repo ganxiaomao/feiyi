@@ -295,52 +295,51 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
 
     @Override
     public ResultVo fixAllStockBaseInfo() {
-//        Date now = new Date();
-//        List<StockDailyMentalInfoEntity> exitedDailyEntities = null;
-//        ResultVo rv = stockMentalInfoServiceImpl.crawlStockDailyMentalInfoFromLixinger(now);
-//        if(rv.getObj() != null){
-//            Set<String> now_available_stock_codes = Sets.newHashSet();
-//            Set<String> old_available_stock_codes =Sets.newHashSet();
-//            List<String> invalid_stock_codes = Lists.newArrayList();
-//            exitedDailyEntities = (List<StockDailyMentalInfoEntity>) rv.getObj();
-//            //根据抓取结果，整理出所有stockCode
-//            for(StockDailyMentalInfoEntity exitedDailyEntity: exitedDailyEntities){
-//                String stockCode_1 = exitedDailyEntity.getStockCode();
-//                now_available_stock_codes.add(stockCode_1);
-//            }
-//
-//            List<StockBaseInfoEntity> baseInfoEntities = getAllStockBaseInfo(0);
-//            for(StockBaseInfoEntity baseInfoEntity : baseInfoEntities){
-//                String stockCode_2 = baseInfoEntity.getStockCode();
-//                old_available_stock_codes.add(stockCode_2);
-//            }
-//            //求now和old的差集，就是需要新增的
-//            List<StockBaseInfoEntity> entities = Lists.newArrayList();
-//            Set<String> new_stock_codes = org.apache.commons.collections4.SetUtils.difference(now_available_stock_codes,old_available_stock_codes);
-//            for(String new_stock_code : new_stock_codes){
-//                StockBaseInfoEntity entity = new StockBaseInfoEntity();
-//                entity.setId(new UUID().toString());
-//                entity.setCreateTime(now);
-//                entity.setDelist(0);//上市
-//                entity.setStockCode(new_stock_code);
-//                entities.add(entity);
-//            }
-//            if(entities != null && !entities.isEmpty()){
-//                baseMapper.batchInsert(entities);
-//                logger.info("总共新增stockCode"+entities.size()+"个");
-//            }
-//
-//            //求old和now的差集，就是需要删除的
-//            Set<String> delete_stock_codes = org.apache.commons.collections4.SetUtils.difference(old_available_stock_codes,now_available_stock_codes).toSet();
-//           if(delete_stock_codes != null && !delete_stock_codes.isEmpty()){
-//               Map<String,Object> updateParams = Maps.newHashMap();
-//               updateParams.put("delist",1);
-//               updateParams.put("list",new ArrayList<String>(delete_stock_codes));
-//               baseMapper.batchUpdateDelistByStockCodes(updateParams);
-//               logger.info("总共退市stockCode"+delete_stock_codes.size()+"个");
-//           }
-//        }
-        List<StockBaseInfoEntity> entities = getAllStockBaseInfo(0);
+        Date now = new Date();
+        List<StockDailyMentalInfoEntity> exitedDailyEntities = null;
+        ResultVo rv = stockMentalInfoServiceImpl.crawlStockDailyMentalInfoFromLixinger(now);
+        if(rv.getObj() != null){
+            Set<String> now_available_stock_codes = Sets.newHashSet();
+            Set<String> old_available_stock_codes =Sets.newHashSet();
+            List<String> invalid_stock_codes = Lists.newArrayList();
+            exitedDailyEntities = (List<StockDailyMentalInfoEntity>) rv.getObj();
+            //根据抓取结果，整理出所有stockCode
+            for(StockDailyMentalInfoEntity exitedDailyEntity: exitedDailyEntities){
+                String stockCode_1 = exitedDailyEntity.getStockCode();
+                now_available_stock_codes.add(stockCode_1);
+            }
+
+            List<StockBaseInfoEntity> baseInfoEntities = getAllStockBaseInfo(0);
+            for(StockBaseInfoEntity baseInfoEntity : baseInfoEntities){
+                String stockCode_2 = baseInfoEntity.getStockCode();
+                old_available_stock_codes.add(stockCode_2);
+            }
+            //求now和old的差集，就是需要新增的
+            List<StockBaseInfoEntity> entities = Lists.newArrayList();
+            Set<String> new_stock_codes = org.apache.commons.collections4.SetUtils.difference(now_available_stock_codes,old_available_stock_codes);
+            for(String new_stock_code : new_stock_codes){
+                StockBaseInfoEntity entity = new StockBaseInfoEntity();
+                entity.setId(new UUID().toString());
+                entity.setCreateTime(now);
+                entity.setDelist(0);//上市
+                entity.setStockCode(new_stock_code);
+                entities.add(entity);
+            }
+            if(entities != null && !entities.isEmpty()){
+                baseMapper.batchInsert(entities);
+                logger.info("总共新增stockCode"+entities.size()+"个");
+            }
+
+            //求old和now的差集，就是需要删除的
+            Set<String> delete_stock_codes = org.apache.commons.collections4.SetUtils.difference(old_available_stock_codes,now_available_stock_codes).toSet();
+           if(delete_stock_codes != null && !delete_stock_codes.isEmpty()){
+               Map<String,Object> updateParams = Maps.newHashMap();
+               updateParams.put("delist",1);
+               updateParams.put("list",new ArrayList<String>(delete_stock_codes));
+               baseMapper.batchUpdateDelistByStockCodes(updateParams);
+               logger.info("总共退市stockCode"+delete_stock_codes.size()+"个");
+           }
+        }
         return new ResultVo(true,null,"修复成功");
     }
 

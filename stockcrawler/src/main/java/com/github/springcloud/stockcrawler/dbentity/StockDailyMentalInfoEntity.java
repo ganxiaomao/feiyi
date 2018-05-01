@@ -33,12 +33,18 @@ public class StockDailyMentalInfoEntity extends Model<StockDailyMentalInfoEntity
     @TableField(value = "pe_ttm")
     private BigDecimal pe_ttm;
 
+    @TableField(exist=false)
+    private BigDecimal peTtm;
+
     /**
      * 扣非动态市盈率
      */
     //@Column(name = "d_pe_ttm")
     @TableField(value = "d_pe_ttm")
     private BigDecimal d_pe_ttm;
+
+    @TableField(exist=false)
+    private BigDecimal dPeTtm;
 
     /**
      * 市净率
@@ -54,12 +60,18 @@ public class StockDailyMentalInfoEntity extends Model<StockDailyMentalInfoEntity
     @TableField(value = "pb_wo_gw")
     private BigDecimal pb_wo_gw;
 
+    @TableField(exist=false)
+    private BigDecimal pbWoGw;
+
     /**
      * 滚动市销率
      */
     //@Column(name = "ps_ttm")
     @TableField(value = "ps_ttm")
     private BigDecimal ps_ttm;
+
+    @TableField(exist=false)
+    private BigDecimal psTtm;
 
     /**
      * 股息率
@@ -68,12 +80,19 @@ public class StockDailyMentalInfoEntity extends Model<StockDailyMentalInfoEntity
     @TableField(value = "dividend_r")
     private BigDecimal dividend_r;
 
+    @TableField(exist=false)
+    private BigDecimal dividendR;
+
     /**
      * 市值
      */
     //@Column(name = "market_value")
     @TableField(value = "market_value")
     private BigDecimal market_value;
+
+    @TableField(exist=false)
+    private BigDecimal marketValue;
+
 
     /**
      * 股票编码

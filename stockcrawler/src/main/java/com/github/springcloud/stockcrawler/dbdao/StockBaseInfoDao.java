@@ -29,6 +29,6 @@ public interface StockBaseInfoDao extends SuperMapperPlus<StockBaseInfoEntity> {
      * @param delist
      * @return
      */
-    public List<String> selectAllStockCodesByDelist(int delist);
+//    public List<String> selectAllStockCodesByDelist(int delist);
 
 }

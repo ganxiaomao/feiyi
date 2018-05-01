@@ -3,6 +3,7 @@ package com.github.springcloud.stockcrawler.common;
 import com.google.common.base.Strings;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 基本数据类型转换工具
@@ -24,5 +25,20 @@ public class BaseClassConvertUtils {
             e.printStackTrace();
         }
         return res;
+    }
+
+    public static double[] convertDoubleList2Array(List<Double> list){
+        if(list != null){
+            double[] res = new double[list.size()];
+            int index=0;
+            for(Double d : list){
+                if(d != null){
+                    res[index] = d.doubleValue();
+                    index++;
+                }
+            }
+            return res;
+        }
+        return null;
     }
 }
