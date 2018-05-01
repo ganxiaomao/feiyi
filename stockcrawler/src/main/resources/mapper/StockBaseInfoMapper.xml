@@ -25,6 +25,10 @@
         SELECT sbi.* FROM financial_stock_base_info sbi where sbi.stock_name like CONCAT('%',#{stockName},'%')
     </select>
 
+    <select id="selectAllStockCodesByDelist" resultMap="java.util.List" parameterType="java.lang.Integer">
+        SELECT sbi.stock_code FROM financial_stock_base_info sbi where sbi.delist = #{delist}
+    </select>
+
     <insert id="batchInsert" parameterType="java.util.List">
         INSERT INTO financial_stock_base_info(id,stock_code,stock_name,stock_type,create_time,listed_time,delist) VALUES
         <foreach collection="list" item="fsbi" separator=",">

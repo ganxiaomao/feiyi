@@ -63,7 +63,7 @@ public class CrawlerController {
     }
 
     /**
-     * 修正stockbaseinfo的数据，有些股票新增，有些退市，需要定期修正一i啊
+     * 修正stockbaseinfo的数据，有些股票新增，有些退市，需要定期修正
      * @return
      */
     @RequestMapping(value = "fixAllStockBaseInfo", method = RequestMethod.GET)
@@ -72,9 +72,19 @@ public class CrawlerController {
         return ResponseEntity.ok(rv);
     }
 
+    /**
+     * 执行全部待抓取的股票基本面信息的任务
+     * @return
+     */
     @RequestMapping(value = "exeCrawlStockMentalInfoTask",method = RequestMethod.GET)
     public ResponseEntity exeCrawlStockMentalInfoTask(){
         ResultVo rv = stockMentalInfoServiceImpl.exeCrawlStockMentalInfoTask();
+        return ResponseEntity.ok(rv);
+    }
+
+    @RequestMapping(value = "computeStockDegree",method = RequestMethod.GET)
+    public ResponseEntity<?> computeStockDegree(){
+        ResultVo rv =stockMentalInfoServiceImpl.computeDailyStockDegree();
         return ResponseEntity.ok(rv);
     }
 }

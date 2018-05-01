@@ -17,6 +17,10 @@
         <result column="create_time" property="createTime" jdbcType="DATE" />
         <result column="date" property="date" jdbcType="DATE" />
         <result column="crawled" property="crawled" jdbcType="INTEGER" />
+        <result column="pb_degree" property="pbDegree" jdbcType="DECIMAL" />
+        <result column="pe_ttm_degree" property="peTtmDegree" jdbcType="DECIMAL" />
+        <result column="stock_degree" property="stockDegree" jdbcType="DECIMAL" />
+        <result column="degreed" property="degreed" jdbcType="INTEGER" />
     </resultMap>
 
     <select id="findAllByStockCode" resultMap="BaseResultMap" parameterType="java.lang.String">

@@ -8,21 +8,30 @@ import com.eaio.uuid.UUID;
 import com.github.springcloud.basecommon.httputils.HttpUtils;
 import com.github.springcloud.basecommon.utils.DateUtils;
 import com.github.springcloud.stockcrawler.common.LixingerUtils;
+import com.github.springcloud.stockcrawler.common.MathUtils;
 import com.github.springcloud.stockcrawler.constant.StockDailyConstant;
+import com.github.springcloud.stockcrawler.dbdao.StockBaseInfoDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDailyCrawlTaskDao;
 import com.github.springcloud.stockcrawler.dbdao.StockDailyMentalInfoDao;
+import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyCrawlTaskEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
+import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +45,12 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
 
     @Resource
     private StockDailyCrawlTaskDao stockDailyCrawlTaskDao;
+
+    @Resource
+    private StockBaseInfoDao stockBaseInfoDao;
+
+    @Autowired
+    private StockCrawlerService stockCrawlerServiceImpl;
 
     @Override
     public List<StockDailyMentalInfoEntity> getDatasByDate(Date date) {
@@ -117,14 +132,28 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
     }
 
     @Override
-    public ResultVo createStockDailyCrawlTask(Date date) {
-        return null;
+    public ResultVo createStockDailyCrawlTask(Date date, int taskType) {
+        String msg = "生成股票日抓取任务失败";
+        boolean success = false;
+        if(date != null && taskType >= 0){
+            StockDailyCrawlTaskEntity entity = new StockDailyCrawlTaskEntity();
+            entity.setId(new UUID().toString());
+            entity.setTaskType(taskType);
+            entity.setCrawlDate(date);
+            entity.setTaskStatus(StockDailyConstant.stock_daily_crawl_task_status_undo);
+
+            stockDailyCrawlTaskDao.insert(entity);
+            msg = "生成股票日抓取任务成功";
+            success = true;
+        }
+        return new ResultVo(success,null,msg);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public boolean batchInsertStockDailyCrawlTask(List<StockDailyCrawlTaskEntity> entities) {
         stockDailyCrawlTaskDao.batchInsertList(entities);
-        return false;
+        return true;
     }
 
     @Override
@@ -177,6 +206,25 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
         return new ResultVo(true,null,"抓取股票基本面信息任务执行完毕");
     }
 
+
+    @Override
+    public ResultVo computeDailyStockDegree() {
+        List<StockDailyMentalInfoEntity> l =baseMapper.findAllByStockCode("000001");//.selectById("00093dc0-4bf0-11e8-b348-9a5fd3589e5b");
+        //1 从stockbaseinfo表获取所有未退市的stockcode
+        List<String> stockCodes = stockCrawlerServiceImpl.getAllStockCodeFromBaseInfo();
+        //2 遍历每个stockCode，根据stockcode从stockmentalinfo表根据date的正序获取所有数据
+        for(String stockCode : stockCodes){
+            logger.info("开始计算stockCode="+stockCode+"股票温度");
+            List<StockDailyMentalInfoEntity> entities = findDatasByStocCodeOrderByDateAsc(stockCode);
+            //循环每个stockDailyMentalInfo信息，degreed=0的，计算其温度
+            List<StockDailyMentalInfoEntity> degreedEntities = computeStockDailyMentalInfoDatasDegree(entities);
+            if(!degreedEntities.isEmpty())//批量更新
+                batchUpdateStockDailyMentalInfo(degreedEntities);
+            logger.info("完成计算stockCode="+stockCode+"股票温度，更新数据"+degreedEntities.size()+"条");
+        }
+        return new ResultVo(true,null,"计算股票温度任务执行完毕");
+    }
+
     /**
      * 根据日期，查找stockDailyMentalInfo表中，字段date为指定日期的数据
      * @param date 指定日期，比如你传的时间是2018-04-01 11:10:00，那么这里只判断到日期部分，也就是2018-04-01
@@ -208,4 +256,81 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
 
         return stockDailyCrawlTaskDao.selectList(wrapper);
     }
+
+    /**
+     * 根据stockCode，依据date字段正序获取所有
+     * @param stockCode
+     * @return
+     */
+    public List<StockDailyMentalInfoEntity> findDatasByStocCodeOrderByDateAsc(String stockCode){
+        List<StockDailyMentalInfoEntity> entities = Lists.newArrayList();
+        if(!Strings.isNullOrEmpty(stockCode)){
+            Wrapper<StockDailyMentalInfoEntity> wrapper = new EntityWrapper<>();
+            wrapper.where("stock_code={0}",stockCode).orderBy("date",true);
+            entities = baseMapper.selectList(wrapper);
+        }
+        return entities;
+    }
+
+    /**
+     * 计算每条记录的股票温度
+     * @param entities
+     * @return 返回的结果是计算前没有，但计算后有了温度的数据，也就是它可能≤参数entities
+     */
+    public List<StockDailyMentalInfoEntity> computeStockDailyMentalInfoDatasDegree(List<StockDailyMentalInfoEntity> entities){
+        List<StockDailyMentalInfoEntity> ress = Lists.newArrayList();
+        double[] pb_array = new double[entities.size()];
+        double[] pe_array = new double[entities.size()];
+        int index = 0;
+        List<DegreeComputeTempClass> dcts = Lists.newArrayList();
+        //整理出全部的pb、pe以及待计算股票温度的数据
+        for(StockDailyMentalInfoEntity entity : entities){
+            pb_array[index] = entity.getPe_ttm()==null?0d:entity.getPe_ttm().doubleValue();
+            pe_array[index] = entity.getPb()==null?0d:entity.getPb().doubleValue();
+            index ++;
+            if(entity.getDegreed() == 0){
+                DegreeComputeTempClass dct = new DegreeComputeTempClass();
+                dct.length = index;
+                dct.stockDailyMentalInfoEntity = entity;
+                dcts.add(dct);
+            }
+        }
+        //开始计算
+        for(DegreeComputeTempClass dct : dcts){
+            double peTtmDegree = MathUtils.pbOrPeDegree(pe_array,dct.stockDailyMentalInfoEntity.getPe_ttm().doubleValue(),0,dct.length);
+            double pbDegree = MathUtils.pbOrPeDegree(pe_array,dct.stockDailyMentalInfoEntity.getPb().doubleValue(),0,dct.length);
+            double stockDegree = (peTtmDegree+pbDegree)/2;
+            dct.stockDailyMentalInfoEntity.setDegreed(1);
+            dct.stockDailyMentalInfoEntity.setPeTtmDegree(new BigDecimal(peTtmDegree));
+            dct.stockDailyMentalInfoEntity.setPbDegree(new BigDecimal(pbDegree));
+            dct.stockDailyMentalInfoEntity.setStockDegree(new BigDecimal(stockDegree));
+            ress.add(dct.stockDailyMentalInfoEntity);
+        }
+        return ress;
+    }
+
+
+    private class DegreeComputeTempClass {
+        StockDailyMentalInfoEntity stockDailyMentalInfoEntity;
+        int length;
+    }
+
+    /**
+     * 批量插入或者更新
+     * @param entities
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean batchUpdateStockDailyMentalInfo(List<StockDailyMentalInfoEntity> entities){
+        boolean res = false;
+        try{
+            insertOrUpdateBatch(entities);
+            res = true;
+        }
+        catch(Exception e){
+            logger.info("error:",e);
+        }
+        return res;
+    }
+
 }

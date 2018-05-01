@@ -24,4 +24,11 @@ public interface StockBaseInfoDao extends SuperMapperPlus<StockBaseInfoEntity> {
      */
     public int batchUpdateDelistByStockCodes(Map<String,Object> params);
 
+    /**
+     * 根据delist获取所有符合的stockCode
+     * @param delist
+     * @return
+     */
+    public List<String> selectAllStockCodesByDelist(int delist);
+
 }

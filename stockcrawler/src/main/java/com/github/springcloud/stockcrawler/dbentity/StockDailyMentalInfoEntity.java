@@ -103,6 +103,30 @@ public class StockDailyMentalInfoEntity extends Model<StockDailyMentalInfoEntity
     @TableField(value = "crawled")
     private int crawled = 0;
 
+    /**
+     * pb温度
+     */
+    @TableField(value = "pb_degree")
+    private BigDecimal pbDegree;
+
+    /**
+     * 动态市盈率温度
+     */
+    @TableField(value = "pe_ttm_degree")
+    private BigDecimal peTtmDegree;
+
+    /**
+     * 股票温度
+     */
+    @TableField(value = "stock_degree")
+    private BigDecimal stockDegree;
+
+    /**
+     * 是否计算过股票温度：0，否；1，是
+     */
+    @TableField(value = "degreed")
+    private int degreed;
+
     @Override
     protected Serializable pkVal() {
         return this.id;

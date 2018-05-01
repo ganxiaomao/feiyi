@@ -36,11 +36,12 @@ public interface StockMentalInfoService extends IService<StockDailyMentalInfoEnt
     public List<StockDailyMentalInfoEntity> fetchStockMentalInfoFromLixingren(String requestJson);
 
     /**
-     * 创建股票信息日常抓取任务，目前包括：股票基本面数据
+     * 创建股票信息日常抓取任务，目前包括：股票基本面数据、股票每日温度
      * @param date
+     * @param taskType
      * @return
      */
-    public ResultVo createStockDailyCrawlTask(Date date);
+    public ResultVo createStockDailyCrawlTask(Date date, int taskType);
 
     /**
      * 批量保存股票日常信息抓取任务
@@ -50,5 +51,11 @@ public interface StockMentalInfoService extends IService<StockDailyMentalInfoEnt
     public boolean batchInsertStockDailyCrawlTask(List<StockDailyCrawlTaskEntity> entities);
 
     public ResultVo exeCrawlStockMentalInfoTask();
+
+    /**
+     * 计算股票温度
+     * @return
+     */
+    public ResultVo computeDailyStockDegree();
 
 }

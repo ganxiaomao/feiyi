@@ -354,10 +354,10 @@ public class StockCrawlerServiceImpl  extends ServiceImpl<StockBaseInfoDao, Stoc
 //        criteria.andCondition("delist=",0);
         Wrapper wrapper = new EntityWrapper();
         //wrapper.eq("delist",0);
-        wrapper.where("delist={0}",0);
+        //wrapper.where("delist={0}",0);
         if(limit > 0)
             wrapper.last("LIMIT "+limit);
-        List<StockBaseInfoEntity> entities = baseMapper.selectList(wrapper);//.selectByExample(example);
+        List<StockBaseInfoEntity> entities = stockBaseInfoDao.selectList(wrapper);//.selectByExample(example);
         if(entities == null)
             entities = Lists.newArrayList();
         return entities;
