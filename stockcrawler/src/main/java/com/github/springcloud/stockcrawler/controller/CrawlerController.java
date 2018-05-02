@@ -1,5 +1,6 @@
 package com.github.springcloud.stockcrawler.controller;
 
+import com.geccocrawler.gecco.annotation.RequestParameter;
 import com.github.springcloud.basecommon.utils.DateUtils;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
@@ -85,6 +86,23 @@ public class CrawlerController {
     @RequestMapping(value = "computeStockDegree",method = RequestMethod.GET)
     public ResponseEntity<?> computeStockDegree(){
         ResultVo rv =stockMentalInfoServiceImpl.computeDailyStockDegree();
+        return ResponseEntity.ok(rv);
+    }
+
+    /**
+     * 计算股票最近一天的股票温度
+     * @param stockCode
+     * @return
+     */
+    @RequestMapping(value = "computeStockLatestDegreeByStockCode",method = RequestMethod.GET)
+    public ResponseEntity<?> computeStockLatestDegreeByStockCode(@RequestParam("stockCode") String stockCode){
+        ResultVo rv =stockMentalInfoServiceImpl.computeStockLatestDegreeByStockCode(stockCode);
+        return ResponseEntity.ok(rv);
+    }
+
+    @RequestMapping(value = "fetchStockMentalInfoByCodeAndDate",method = RequestMethod.GET)
+    public ResponseEntity<?> fetchStockMentalInfoByCodeAndDate(@RequestParam("stockCode") String stockCode, @RequestParam("date") String date){
+        ResultVo rv =stockMentalInfoServiceImpl.fetchStockMentalInfoByCodeAndDate(stockCode,date);
         return ResponseEntity.ok(rv);
     }
 }

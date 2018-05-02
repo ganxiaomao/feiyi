@@ -58,4 +58,8 @@ public interface StockMentalInfoService extends IService<StockDailyMentalInfoEnt
      */
     public ResultVo computeDailyStockDegree();
 
+    public ResultVo computeStockLatestDegreeByStockCode(String stockCode);
+
+    public ResultVo fetchStockMentalInfoByCodeAndDate(String stockCode, String date);
+
 }

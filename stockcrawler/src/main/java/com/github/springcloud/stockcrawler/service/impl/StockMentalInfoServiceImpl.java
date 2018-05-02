@@ -79,13 +79,18 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
         List<StockDailyMentalInfoEntity> entities = fetchStockMentalInfoFromLixingren(requestJson);
         //批量保存
         try{
+            Date mentalDate = null;
+            if(entities != null && !entities.isEmpty()){
+                mentalDate = entities.get(0).getDate();
+            }
             //先根据日期查找符合的基本面信息记录，如果有的话，就不再生成记录
-            List<StockDailyMentalInfoEntity> exists = findDatasByDate(date);
             List<StockDailyMentalInfoEntity> tmps = Lists.newArrayList();
             for(StockDailyMentalInfoEntity entity : entities){
-                if(!exists.contains(entity))
+                int existNum = findCountByDateAndStockCode(entity.getDate(),entity.getStockCode());
+                if(existNum == 0)
                     tmps.add(entity);
             }
+
             obj = tmps;
             logger.info(dateStr+"日，抓取到数据"+entities.size()+"条，去除已存在的，总共"+tmps.size()+"条数据。");
         }
@@ -173,7 +178,9 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
                 if(rv.isSuccess()){
                     //
                     if(rv.getObj() != null){
-                        baseMapper.batchInsertList((List<StockDailyMentalInfoEntity>) rv.getObj());
+                        List<StockDailyMentalInfoEntity> added = (List<StockDailyMentalInfoEntity>) rv.getObj();
+                        if(!added.isEmpty())
+                            baseMapper.batchInsertList(added);
                         success_ids.add(stockDailyCrawlTaskEntity.getId());
                     }
                 }
@@ -230,6 +237,45 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
         return new ResultVo(true,null,"计算股票温度任务执行完毕");
     }
 
+    @Override
+    public ResultVo computeStockLatestDegreeByStockCode(String stockCode) {
+        String msg = "计算成功";
+        Object obj = null;
+        boolean success = true;
+        if(!Strings.isNullOrEmpty(stockCode)){
+            List<StockDailyMentalInfoEntity> entities = findDatasByStocCodeOrderByDateAsc(stockCode);
+            List<StockDailyMentalInfoEntity> degreeds = computeStockDailyMentalInfoDatasDegree(entities);
+            if(!degreeds.isEmpty()){
+                int size = degreeds.size();
+                StockDailyMentalInfoEntity latest = degreeds.get(size-1);
+                obj = latest.getStockDegree().multiply(new BigDecimal(100));
+                msg += DateUtils.convertDate2String(latest.getDate(),"yyyy-MM-dd");
+            }
+            else{
+                int size = entities.size();
+                StockDailyMentalInfoEntity latest = entities.get(size-1);
+                obj = latest.getStockDegree();
+                msg += DateUtils.convertDate2String(latest.getDate(),"yyyy-MM-dd");
+            }
+        }
+        return new ResultVo(success,obj,msg);
+    }
+
+    @Override
+    public ResultVo fetchStockMentalInfoByCodeAndDate(String stockCode, String date) {
+        boolean success = false;
+        Object obj = null;
+        String msg = "抓取失败";
+        if(!Strings.isNullOrEmpty(stockCode) && !Strings.isNullOrEmpty(date)){
+            String requestJson = LixingerUtils.arrangeLixingerStockMentalInfoParam(date,Lists.newArrayList(stockCode));
+            List<StockDailyMentalInfoEntity> entities = fetchStockMentalInfoFromLixingren(requestJson);
+            obj = entities;
+            success = true;
+            msg = "抓取成功";
+        }
+        return new ResultVo(success,obj,msg);
+    }
+
     /**
      * 根据日期，查找stockDailyMentalInfo表中，字段date为指定日期的数据
      * @param date 指定日期，比如你传的时间是2018-04-01 11:10:00，那么这里只判断到日期部分，也就是2018-04-01
@@ -244,6 +290,30 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
             return entities;
         }
         return Lists.newArrayList();
+    }
+
+    public List<StockDailyMentalInfoEntity> findDatasByDateAndStockCode(Date date, String stockCode){
+        if(date != null){
+            String dateStr = DateUtils.convertDate2String(date,"yyyy-MM-dd");
+            Wrapper<StockDailyMentalInfoEntity> wrapper = new EntityWrapper<>();
+            wrapper.where("CAST(date as date)={0}",dateStr).and("stock_code='"+stockCode+"'");
+            List<StockDailyMentalInfoEntity> entities = baseMapper.selectList(wrapper);
+            //baseMapper.selectCount()
+            return entities;
+        }
+        return Lists.newArrayList();
+    }
+
+    public int findCountByDateAndStockCode(Date date, String stockCode){
+        int res = 0;
+        if(date != null && !Strings.isNullOrEmpty(stockCode)){
+            String dateStr = DateUtils.convertDate2String(date,"yyyy-MM-dd");
+            Wrapper<StockDailyMentalInfoEntity> wrapper = new EntityWrapper<>();
+            wrapper.where("CAST(date as date)={0}",dateStr).and("stock_code='"+stockCode+"'");
+            List<StockDailyMentalInfoEntity> entities = baseMapper.selectList(wrapper);
+            res = baseMapper.selectCount(wrapper);
+        }
+        return res;
     }
 
     /**
@@ -290,7 +360,6 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
         List<Double> pbList = Lists.newArrayList();
         List<Double> peList = Lists.newArrayList();
         int index = 0;
-        List<DegreeComputeTempClass> dcts = Lists.newArrayList();
         //整理出全部的pb、pe以及待计算股票温度的数据
         for(StockDailyMentalInfoEntity entity : entities){
             if(entity.getPeTtm() == null || entity.getPb()==null){

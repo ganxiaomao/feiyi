@@ -52,9 +52,15 @@ CREATE TABLE `financial_stock_daily_mental_info` (
   `ps_ttm` decimal(18,4) DEFAULT NULL COMMENT '滚动市销率',
   `dividend_r` decimal(18,4) DEFAULT NULL COMMENT '股息率',
   `market_value` decimal(18,4) DEFAULT NULL COMMENT '市值',
-  `crawled` int(11) DEFAULT '0' COMMENT '是否信息抓取过：0，否；1，是',
-  PRIMARY KEY (`id`)
+  `crawled` int(2) DEFAULT '0' COMMENT '是否信息抓取过：0，否；1，是',
+  `pb_degree` decimal(18,4) DEFAULT '0.0000' COMMENT '不含商誉的pb温度',
+  `pe_ttm_degree` decimal(18,4) DEFAULT '0.0000' COMMENT '扣非动态市盈率温度',
+  `stock_degree` decimal(18,4) DEFAULT '0.0000' COMMENT '股票温度',
+  `degreed` int(2) DEFAULT '0' COMMENT '是否计算过股票温度：0，否；1，是',
+  PRIMARY KEY (`id`),
+  KEY `idx_financial_stock_daily_mental_info_stock_code` (`stock_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 CREATE TABLE `financial`.`financial_stock_daily_crawl_task` (
   `id` VARCHAR(64) NOT NULL,
