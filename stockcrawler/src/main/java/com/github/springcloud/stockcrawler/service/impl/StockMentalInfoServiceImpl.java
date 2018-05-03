@@ -17,6 +17,7 @@ import com.github.springcloud.stockcrawler.dbdao.StockDailyMentalInfoDao;
 import com.github.springcloud.stockcrawler.dbentity.StockBaseInfoEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyCrawlTaskEntity;
 import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
+import com.github.springcloud.stockcrawler.service.RedisServer;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
@@ -53,6 +54,9 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
     @Autowired
     private StockCrawlerService stockCrawlerServiceImpl;
 
+    @Autowired
+    private RedisServer redisServerImpl;
+
     @Override
     public List<StockDailyMentalInfoEntity> getDatasByDate(Date date) {
         List<StockDailyMentalInfoEntity> entities = Lists.newArrayList();
@@ -87,8 +91,10 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
             List<StockDailyMentalInfoEntity> tmps = Lists.newArrayList();
             for(StockDailyMentalInfoEntity entity : entities){
                 int existNum = findCountByDateAndStockCode(entity.getDate(),entity.getStockCode());
-                if(existNum == 0)
-                    tmps.add(entity);
+                if(existNum == 0 ){
+                    if(entity.getPe_ttm() != null || entity.getPb() != null)
+                        tmps.add(entity);
+                }
             }
 
             obj = tmps;
