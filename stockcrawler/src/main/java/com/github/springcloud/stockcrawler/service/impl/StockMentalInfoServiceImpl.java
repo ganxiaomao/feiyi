@@ -20,6 +20,7 @@ import com.github.springcloud.stockcrawler.dbentity.StockDailyMentalInfoEntity;
 import com.github.springcloud.stockcrawler.service.RedisServer;
 import com.github.springcloud.stockcrawler.service.StockCrawlerService;
 import com.github.springcloud.stockcrawler.service.StockMentalInfoService;
+import com.github.springcloud.stockcrawler.thread.StockMentalInfoProducer;
 import com.github.springcloud.stockcrawler.vo.ResultVo;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -28,6 +29,7 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * Created by ganzhen on 2018/4/28.
@@ -57,6 +60,11 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
     @Autowired
     private RedisServer redisServerImpl;
 
+    @Autowired
+    private ApplicationContext context;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(8);
+
     @Override
     public List<StockDailyMentalInfoEntity> getDatasByDate(Date date) {
         List<StockDailyMentalInfoEntity> entities = Lists.newArrayList();
@@ -75,11 +83,15 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
 
     @Override
     public ResultVo crawlStockDailyMentalInfoFromLixinger(Date date) {
+        long startCrawl = System.currentTimeMillis();
         String dateStr = DateUtils.convertDate2String(date,"yyyy-MM-dd");
         boolean success = true;
         Object obj = null;
         String msg = dateStr+"日，股票基本面数据获取成功";
         String requestJson = LixingerUtils.arrangeLixingerStockMentalInfoParam(dateStr,null);
+
+
+
         List<StockDailyMentalInfoEntity> entities = fetchStockMentalInfoFromLixingren(requestJson);
         //批量保存
         try{
@@ -89,14 +101,26 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
             }
             //先根据日期查找符合的基本面信息记录，如果有的话，就不再生成记录
             List<StockDailyMentalInfoEntity> tmps = Lists.newArrayList();
+            long startRedis = System.currentTimeMillis();
             for(StockDailyMentalInfoEntity entity : entities){
-                int existNum = findCountByDateAndStockCode(entity.getDate(),entity.getStockCode());
-                if(existNum == 0 ){
-                    if(entity.getPe_ttm() != null || entity.getPb() != null)
+                String redis_key = StockDailyConstant.redis_key_prefix_stock_daily_mental_info+entity.getStockCode()+DateUtils.convertDate2String(entity.getDate(),null);
+                String redis_value = redisServerImpl.get(redis_key);
+                if(Strings.isNullOrEmpty(redis_value)){
+                    if(entity.getPe_ttm() != null || entity.getPb() != null){
                         tmps.add(entity);
-                }
-            }
+                        redis_value = "has";
+                        redisServerImpl.set(redis_key,redis_value);
+                    }
 
+                }
+//                int existNum = findCountByDateAndStockCode(entity.getDate(),entity.getStockCode());
+//                if(existNum == 0 ){
+//                    if(entity.getPe_ttm() != null || entity.getPb() != null)
+//                        tmps.add(entity);
+//                }
+            }
+            long endRedis = System.currentTimeMillis();
+            logger.info("执行一次redis去重，耗时"+(endRedis-startRedis)+"毫秒");
             obj = tmps;
             logger.info(dateStr+"日，抓取到数据"+entities.size()+"条，去除已存在的，总共"+tmps.size()+"条数据。");
         }
@@ -105,7 +129,8 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
             msg = dateStr+"日，股票基本面数据获取失败，失败原因："+e.getMessage();
             logger.info("error:",e);
         }
-
+        long endCrawl = System.currentTimeMillis();
+        logger.info("执行一次股票基本面获取+去重，耗时"+(endCrawl-startCrawl)+"毫秒");
         return new ResultVo(success,obj,msg);
     }
 
@@ -176,28 +201,95 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
         while(true){
             count++;
             logger.info("抓取第"+count+"次的10条任务对应的信息");
-            List<StockDailyCrawlTaskEntity> stockDailyCrawlTaskEntities = getCrawlTaskByTypeAndStatusAndLimit(StockDailyConstant.stock_daily_crawl_task_type_mental,StockDailyConstant.stock_daily_crawl_task_status_undo,10);
+            List<StockDailyCrawlTaskEntity> stockDailyCrawlTaskEntities = getCrawlTaskByTypeAndStatusAndLimit(StockDailyConstant.stock_daily_crawl_task_type_mental,StockDailyConstant.stock_daily_crawl_task_status_undo,3);
             List<String> success_ids = Lists.newArrayList();
             List<String> fail_ids = Lists.newArrayList();
-            for(StockDailyCrawlTaskEntity stockDailyCrawlTaskEntity : stockDailyCrawlTaskEntities){
-                ResultVo rv = crawlStockDailyMentalInfoFromLixinger(stockDailyCrawlTaskEntity.getCrawlDate());
-                if(rv.isSuccess()){
-                    //
-                    if(rv.getObj() != null){
-                        List<StockDailyMentalInfoEntity> added = (List<StockDailyMentalInfoEntity>) rv.getObj();
-                        if(!added.isEmpty())
-                            baseMapper.batchInsertList(added);
-                        success_ids.add(stockDailyCrawlTaskEntity.getId());
-                    }
-                }
-                else{
-                    //
-                    if(rv.getObj() != null){
-                        fail_ids.add(stockDailyCrawlTaskEntity.getId());
-                    }
 
-                }
+            List<StockMentalInfoProducer> producers = Lists.newArrayList();
+            for(StockDailyCrawlTaskEntity stockDailyCrawlTaskEntity : stockDailyCrawlTaskEntities){
+//                ResultVo rv = crawlStockDailyMentalInfoFromLixinger(stockDailyCrawlTaskEntity.getCrawlDate());
+//                if(rv.isSuccess()){
+//                    //
+//                    if(rv.getObj() != null){
+//                        List<StockDailyMentalInfoEntity> added = (List<StockDailyMentalInfoEntity>) rv.getObj();
+//                        if(!added.isEmpty())
+//                            baseMapper.batchInsertList(added);
+//                        success_ids.add(stockDailyCrawlTaskEntity.getId());
+//                    }
+//                }
+//                else{
+//                    //
+//                    if(rv.getObj() != null){
+//                        fail_ids.add(stockDailyCrawlTaskEntity.getId());
+//                    }
+//
+//                }
+                String dateStr = DateUtils.convertDate2String(stockDailyCrawlTaskEntity.getCrawlDate(),"yyyy-MM-dd");
+                String requestJson = LixingerUtils.arrangeLixingerStockMentalInfoParam(dateStr,null);
+                StockMentalInfoProducer producer = context.getBean(StockMentalInfoProducer.class,requestJson);
+                producers.add(producer);
+
+                success_ids.add(stockDailyCrawlTaskEntity.getId());
             }
+
+            try {
+                //long starMulti = System.currentTimeMillis();
+                List<Future<List<StockDailyMentalInfoEntity>>> futures = executorService.invokeAll(producers);
+
+                List<StockDailyMentalInfoEntity> tmps = Lists.newArrayList();
+                for(Future<List<StockDailyMentalInfoEntity>> future : futures){
+                    List<StockDailyMentalInfoEntity> lists = future.get(10000, TimeUnit.MICROSECONDS);
+                    for(StockDailyMentalInfoEntity e :lists){
+                        String redis_key = StockDailyConstant.redis_key_prefix_stock_daily_mental_info+e.getStockCode()+DateUtils.convertDate2String(e.getDate(),null);
+                        String redis_value = redisServerImpl.get(redis_key);
+                        if(Strings.isNullOrEmpty(redis_value)){
+                            if(e.getPe_ttm() != null || e.getPb() != null){
+                                tmps.add(e);
+                                redis_value = "has";
+                                redisServerImpl.set(redis_key,redis_value);
+                            }
+
+                        }
+                    }
+                    //tmps.addAll(future.get(10000, TimeUnit.MICROSECONDS));
+
+                    logger.info("多线程获取的数据总共："+tmps.size()+"条");
+                }
+
+
+                /*List<StockDailyMentalInfoEntity> entities = Lists.newArrayList();
+                if(!tmps.isEmpty()){
+                    //去重
+                    for (StockDailyMentalInfoEntity e : tmps){
+                        String redis_key = StockDailyConstant.redis_key_prefix_stock_daily_mental_info+e.getStockCode()+DateUtils.convertDate2String(e.getDate(),null);
+                        String redis_value = redisServerImpl.get(redis_key);
+                        if(Strings.isNullOrEmpty(redis_value)){
+                            if(e.getPe_ttm() != null || e.getPb() != null){
+                                entities.add(e);
+                                redis_value = "has";
+                                redisServerImpl.set(redis_key,redis_value);
+                            }
+
+                        }
+                    }
+                }*/
+                //long endMulti = System.currentTimeMillis();
+                //logger.info("redis去重耗时："+(endMulti-starMulti));
+                logger.info("总共待插入数据"+tmps.size()+"条");
+                if(!tmps.isEmpty()){
+                    baseMapper.batchInsertList(tmps);
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             //更新taskstatus为1，成功
             if(!success_ids.isEmpty()){
                 Map<String,Object> params = Maps.newHashMap();
@@ -250,18 +342,24 @@ public class StockMentalInfoServiceImpl extends ServiceImpl<StockDailyMentalInfo
         boolean success = true;
         if(!Strings.isNullOrEmpty(stockCode)){
             List<StockDailyMentalInfoEntity> entities = findDatasByStocCodeOrderByDateAsc(stockCode);
-            List<StockDailyMentalInfoEntity> degreeds = computeStockDailyMentalInfoDatasDegree(entities);
-            if(!degreeds.isEmpty()){
-                int size = degreeds.size();
-                StockDailyMentalInfoEntity latest = degreeds.get(size-1);
-                obj = latest.getStockDegree().multiply(new BigDecimal(100));
-                msg += DateUtils.convertDate2String(latest.getDate(),"yyyy-MM-dd");
+            if(entities.size() == 0){
+                success = false;
+                msg = "找不到代码"+stockCode+"的股票数据，请确认代码是否正确。";
             }
             else{
-                int size = entities.size();
-                StockDailyMentalInfoEntity latest = entities.get(size-1);
-                obj = latest.getStockDegree();
-                msg += DateUtils.convertDate2String(latest.getDate(),"yyyy-MM-dd");
+                List<StockDailyMentalInfoEntity> degreeds = computeStockDailyMentalInfoDatasDegree(entities);
+                if(!degreeds.isEmpty()){
+                    int size = degreeds.size();
+                    StockDailyMentalInfoEntity latest = degreeds.get(size-1);
+                    obj = latest.getStockDegree().multiply(new BigDecimal(100));
+                    msg += DateUtils.convertDate2String(latest.getDate(),"yyyy-MM-dd");
+                }
+                else{
+                    int size = entities.size();
+                    StockDailyMentalInfoEntity latest = entities.get(size-1);
+                    obj = latest.getStockDegree();
+                    msg += DateUtils.convertDate2String(latest.getDate(),"yyyy-MM-dd");
+                }
             }
         }
         return new ResultVo(success,obj,msg);

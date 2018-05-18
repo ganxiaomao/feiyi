@@ -26,6 +26,9 @@ public class LixingerUtils {
         ja3.add("pb");
         ja3.add("market_value");
         ja3.add("dividend_r");
+        ja3.add("d_pe_ttm");
+        ja3.add("pb_wo_gw");
+        ja3.add("ps_ttm");
         jo.put("metrics",ja3);
         //不添加stockCodes，则会返回所有未退市的股票基本面数据
         JSONArray ja4 = new JSONArray();

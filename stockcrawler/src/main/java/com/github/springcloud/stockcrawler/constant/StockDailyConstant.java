@@ -20,4 +20,9 @@ public class StockDailyConstant {
      * 股票日常抓取任务状态：抓取成功
      */
     public static final int stock_daily_crawl_task_status_success = 1;
+
+    /**
+     * 股票日常基本面数据的redis的key的前缀
+     */
+    public static final String redis_key_prefix_stock_daily_mental_info = "stock_daily_mental_info";
 }

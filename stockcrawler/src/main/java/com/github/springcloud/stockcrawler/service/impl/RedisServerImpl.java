@@ -1,5 +1,6 @@
 package com.github.springcloud.stockcrawler.service.impl;
 
+import com.github.springcloud.stockcrawler.common.JsonUtils;
 import com.github.springcloud.stockcrawler.service.RedisServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -54,6 +57,44 @@ public class RedisServerImpl implements RedisServer {
             }
         });
         return result;
+    }
+
+    @Override
+    public void hmset(String key, Object obj) throws Exception {
+        Assert.hasText(key,"Key is not empty.");
+
+        Map<byte[], byte[]> data=JsonUtils.readJsonByteMap(JsonUtils.getJsonString(obj));
+        redisTemplate.execute(new RedisCallback<String>() {
+            @Override
+            public String doInRedis(RedisConnection connection) throws DataAccessException {
+                RedisSerializer<String> serializer = redisTemplate.getStringSerializer();
+                connection.hMSet(serializer.serialize(key),data);
+                return "";
+            }
+        });
+    }
+
+    @Override
+    public <T> T hget(String key, Class<T> clz) throws Exception {
+        Assert.hasText(key,"Key is not empty.");
+
+        return redisTemplate.execute(new RedisCallback<T>() {
+
+            @Override
+            public T doInRedis(RedisConnection connection) throws DataAccessException {
+                RedisSerializer<String> serializer = redisTemplate.getStringSerializer();
+
+                Map<String,Object> result;
+
+                Map<byte[],byte[]> data=connection.hGetAll(serializer.serialize(key));
+                result= new HashMap<>();
+                for (Map.Entry<byte[], byte[]> entry: data.entrySet()) {
+                    result.put(serializer.deserialize(entry.getKey()),serializer.deserialize(entry.getValue()));
+                }
+
+                return JsonUtils.json2Obj(JsonUtils.getJsonString(result),clz);
+            }
+        });
     }
 
     @Override

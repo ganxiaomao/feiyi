@@ -39,6 +39,18 @@ spring:
       max-idle: 8
     ## 连接超时时间（毫秒）
     timeout: 0
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirms: true
+    queuename: local_test
+    virtual-host: /
+    template:
+      routing-key: local_routing_key
+      exchange: local_exchange
+    appid: 9A064E7A180DD4790F827F546F699BB3
 #mybatis:
 #  basepackage: com.github.springcloud.stockcrawler.dbdao
 #  type-aliases-package: com.github.springcloud.stockcrawler.dbentity

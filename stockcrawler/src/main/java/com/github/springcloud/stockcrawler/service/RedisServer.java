@@ -22,6 +22,10 @@ public interface RedisServer {
      */
     public String get(String key) throws Exception;
 
+    public void hmset(String key, Object obj) throws Exception;
+
+    public <T> T hget(String key, Class<T> clz) throws Exception;
+
     /**
      * 删除指定的key
      * @param key

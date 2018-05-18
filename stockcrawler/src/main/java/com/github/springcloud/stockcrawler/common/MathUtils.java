@@ -43,6 +43,7 @@ public class MathUtils {
         return degree*100;
     }
 
+
     public static void main(String[] args){
         double[] values = {3.9807,3.9198};
         double current = 3.9198;
@@ -50,5 +51,21 @@ public class MathUtils {
         int length = values.length;
         double degree = pbOrPeDegree(values,current,begin,length);
         System.out.println("温度="+degree);
+
+        double donge_roe = 23.78;
+        double donge_net_assets = 104.96;
+        double donge_years = 9;
+        double donge_total_capital_stock = 6.54;
+
+        double stock_price = (Math.pow((1+(donge_roe/100)),donge_years)*donge_net_assets)/(2*donge_total_capital_stock);
+        System.out.println("东阿阿胶股票估值："+stock_price);
+
+        double yonganxing_roe = 33.36;
+        double yonganxing_net_assets = 16.69;
+        double yonganxing_years = 7;
+        double yonganxing_total_capital_stock = 1.34;
+
+        double yonganxing_stock_price = (Math.pow((1+(yonganxing_roe/100)),yonganxing_years)*yonganxing_net_assets)/(2*yonganxing_total_capital_stock);
+        System.out.println("永安行股票估值："+yonganxing_stock_price);
     }
 }
