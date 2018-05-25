@@ -30,15 +30,27 @@ spring:
     host: localhost
     password: ~ ##redis密码，没有的话就用~填充
     port: 6379
-    pool:
-      ## 连接池最大连接数（使用负值表示没有限制）
-      max-active: 8
-      ## 连接池最大阻塞等待时间（使用负值表示没有限制）
-      max-wait: 100000
-      ## 连接池中的最大空闲连接
-      max-idle: 8
-      ## 连接超时时间（毫秒）
     timeout: 0
+    lettuce:
+      pool:
+        ## 连接池最大连接数（使用负值表示没有限制）
+        max-active: 8
+        ## 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: 100000
+        ## 连接池中的最大空闲连接
+        max-idle: 8
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    publisher-confirms: true
+    queuename: local_test
+    virtual-host: /
+    template:
+      routing-key: local_routing_key
+      exchange: local_exchange
+    appid: 9A064E7A180DD4790F827F546F699BB3
 #mybatis:
 #  basepackage: com.github.springcloud.stockcrawler.dbdao
 #  type-aliases-package: com.github.springcloud.stockcrawler.dbentity

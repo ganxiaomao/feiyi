@@ -22,7 +22,7 @@ public abstract class BasicProducerService implements RabbitTemplate.ConfirmCall
     @Resource
     public RabbitTemplate rabbitTemplate;
 
-    @Value("${spring.rabbitmq.routingkey}")
+    @Value("${spring.rabbitmq.template.routingkey}")
     private String routingkey;
 
     @Value("${spring.rabbitmq.appid}")
