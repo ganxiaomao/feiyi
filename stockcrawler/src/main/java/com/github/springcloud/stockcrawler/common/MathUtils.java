@@ -67,5 +67,12 @@ public class MathUtils {
 
         double yonganxing_stock_price = (Math.pow((1+(yonganxing_roe/100)),yonganxing_years)*yonganxing_net_assets)/(2*yonganxing_total_capital_stock);
         System.out.println("永安行股票估值："+yonganxing_stock_price);
+
+        System.out.println("金螳螂股票估值："+stockPrice(18.76, 123.14, 9, 26.43));
+    }
+
+    public static double stockPrice(double roe, double netset, double years, double total_capital_stock){
+        double res = (Math.pow((1+(roe/100)),years)*netset)/(2*total_capital_stock);
+        return res;
     }
 }
